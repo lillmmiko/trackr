@@ -1,0 +1,2567 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MEI — Life Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=Instrument+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+–black: #1a1814;
+–white: #faf7f2;
+–surface: #f3efe8;
+–surface-2: #ece7de;
+–grey-100: #e5dfd5;
+–grey-200: #cdc6b8;
+–grey-400: #9e9688;
+–grey-600: #6b6358;
+–accent: #1a1814;
+–xp-color: #1a1814;
+–radius: 12px;
+–radius-sm: 8px;
+–radius-full: 999px;
+–font-display: ‘DM Serif Display’, serif;
+–font-mono: ‘DM Mono’, monospace;
+–font-body: ‘Instrument Sans’, sans-serif;
+}
+
+html, body {
+min-height: 100vh;
+background: var(–surface);
+color: var(–black);
+font-family: var(–font-body);
+font-size: 14px;
+}
+
+/* LAYOUT */
+.app {
+display: grid;
+grid-template-columns: 260px 1fr;
+grid-template-rows: auto 1fr;
+min-height: 100vh;
+}
+
+/* HEADER */
+header {
+grid-column: 1 / -1;
+border-bottom: 1px solid var(–black);
+padding: 20px 32px;
+display: flex;
+align-items: center;
+justify-content: space-between;
+background: var(–black);
+color: var(–white);
+}
+
+.header-left { display: flex; align-items: baseline; gap: 16px; }
+
+.logo {
+font-family: var(–font-display);
+font-size: 22px;
+letter-spacing: -0.5px;
+}
+
+.header-date {
+font-family: var(–font-mono);
+font-size: 11px;
+color: var(–grey-400);
+letter-spacing: 0.5px;
+}
+
+/* XP WIDGET IN HEADER */
+.xp-widget {
+display: flex;
+flex-direction: column;
+align-items: flex-end;
+gap: 6px;
+}
+
+.xp-level-label {
+font-family: var(–font-mono);
+font-size: 11px;
+color: var(–grey-400);
+letter-spacing: 1px;
+text-transform: uppercase;
+}
+
+.xp-bar-wrap {
+width: 200px;
+height: 4px;
+background: var(–grey-600);
+border-radius: 2px;
+overflow: hidden;
+}
+
+.xp-bar-fill {
+height: 100%;
+background: var(–white);
+border-radius: 2px;
+transition: width 0.6s cubic-bezier(.16,1,.3,1);
+}
+
+.xp-numbers {
+font-family: var(–font-mono);
+font-size: 10px;
+color: var(–grey-400);
+}
+
+/* SIDEBAR */
+.sidebar {
+border-right: 1px solid var(–grey-100);
+padding: 28px 0;
+display: flex;
+flex-direction: column;
+gap: 0;
+background: var(–white);
+}
+
+.sidebar-section-label {
+font-family: var(–font-mono);
+font-size: 9px;
+letter-spacing: 2px;
+text-transform: uppercase;
+color: var(–grey-400);
+padding: 0 24px 12px;
+}
+
+.nav-item {
+display: flex;
+align-items: center;
+gap: 12px;
+padding: 11px 24px;
+cursor: pointer;
+border: none;
+background: none;
+width: 100%;
+text-align: left;
+font-family: var(–font-body);
+font-size: 13px;
+font-weight: 400;
+color: var(–grey-600);
+transition: all 0.15s ease;
+border-left: 2px solid transparent;
+}
+
+.nav-item:hover { background: var(–grey-100); color: var(–black); }
+.nav-item.active {
+background: var(–black);
+color: var(–white);
+border-left-color: var(–white);
+font-weight: 500;
+}
+
+.nav-icon { font-size: 16px; flex-shrink: 0; }
+
+.sidebar-divider {
+height: 1px;
+background: var(–grey-200);
+margin: 16px 0;
+}
+
+.streak-badge {
+margin: 16px 24px 0;
+padding: 14px 16px;
+border: 1px solid var(–grey-100);
+border-radius: var(–radius);
+background: var(–surface);
+}
+
+.streak-title {
+font-family: var(–font-mono);
+font-size: 9px;
+letter-spacing: 2px;
+text-transform: uppercase;
+color: var(–grey-400);
+margin-bottom: 6px;
+}
+
+.streak-count {
+font-family: var(–font-display);
+font-size: 28px;
+color: var(–black);
+line-height: 1;
+}
+
+.streak-sub { font-size: 11px; color: var(–grey-400); margin-top: 4px; }
+
+/* MAIN CONTENT */
+main {
+padding: 36px 40px;
+overflow-y: auto;
+background: var(–surface);
+}
+
+.page { display: none; }
+.page.active { display: block; }
+
+.page-title {
+font-family: var(–font-display);
+font-size: 32px;
+letter-spacing: -0.5px;
+margin-bottom: 4px;
+line-height: 1.1;
+}
+
+.page-sub {
+font-size: 12px;
+color: var(–grey-400);
+font-family: var(–font-mono);
+margin-bottom: 32px;
+}
+
+/* CARDS */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+
+.card {
+border: 1px solid var(–grey-100);
+padding: 20px 22px;
+border-radius: var(–radius);
+background: var(–white);
+position: relative;
+transition: border-color 0.15s;
+}
+
+.card:hover { border-color: var(–grey-200); }
+
+.card-label {
+font-family: var(–font-mono);
+font-size: 9px;
+letter-spacing: 2px;
+text-transform: uppercase;
+color: var(–grey-400);
+margin-bottom: 10px;
+}
+
+.card-value {
+font-family: var(–font-display);
+font-size: 36px;
+line-height: 1;
+color: var(–black);
+}
+
+.card-sub { font-size: 11px; color: var(–grey-400); margin-top: 6px; }
+
+.card-inverted {
+background: var(–black);
+border-color: var(–black);
+color: var(–white);
+}
+
+.card-inverted .card-label { color: var(–grey-600); }
+.card-inverted .card-value { color: var(–white); }
+.card-inverted .card-sub { color: var(–grey-600); }
+
+/* SECTION HEADER */
+.section-header {
+display: flex;
+align-items: center;
+justify-content: space-between;
+margin-bottom: 16px;
+padding-bottom: 12px;
+border-bottom: 1px solid var(–grey-200);
+}
+
+.section-title {
+font-family: var(–font-mono);
+font-size: 11px;
+letter-spacing: 2px;
+text-transform: uppercase;
+color: var(–black);
+}
+
+/* BUTTON */
+.btn {
+font-family: var(–font-body);
+font-size: 12px;
+font-weight: 500;
+padding: 8px 18px;
+border-radius: var(–radius-full);
+border: 1px solid var(–black);
+cursor: pointer;
+transition: all 0.15s;
+letter-spacing: 0.3px;
+}
+
+.btn-primary { background: var(–black); color: var(–white); }
+.btn-primary:hover { background: var(–grey-600); border-color: var(–grey-600); }
+.btn-ghost { background: transparent; color: var(–black); }
+.btn-ghost:hover { background: var(–black); color: var(–white); }
+.btn-danger { background: transparent; color: #c0392b; border-color: #c0392b; font-size: 11px; padding: 5px 12px; border-radius: var(–radius-full); }
+.btn-danger:hover { background: #c0392b; color: white; }
+
+/* FORM */
+.form-group { margin-bottom: 16px; }
+.form-label {
+display: block;
+font-family: var(–font-mono);
+font-size: 10px;
+letter-spacing: 1.5px;
+text-transform: uppercase;
+color: var(–grey-600);
+margin-bottom: 6px;
+}
+
+.form-input, .form-select, .form-textarea {
+width: 100%;
+padding: 10px 16px;
+border: 1px solid var(–grey-100);
+border-radius: var(–radius);
+font-family: var(–font-body);
+font-size: 13px;
+color: var(–black);
+background: var(–surface);
+outline: none;
+transition: border-color 0.15s;
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+border-color: var(–grey-400);
+background: var(–white);
+}
+
+.form-textarea { resize: vertical; min-height: 80px; }
+
+/* MODAL */
+.modal-overlay {
+position: fixed;
+inset: 0;
+background: rgba(10,10,10,0.5);
+z-index: 100;
+display: flex;
+align-items: center;
+justify-content: center;
+opacity: 0;
+pointer-events: none;
+transition: opacity 0.2s;
+}
+
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+
+.modal {
+background: var(–white);
+border: 1px solid var(–grey-100);
+border-radius: var(–radius);
+padding: 32px;
+width: 460px;
+max-width: 90vw;
+transform: translateY(10px);
+transition: transform 0.2s;
+}
+
+.modal-overlay.open .modal { transform: translateY(0); }
+
+.modal-title {
+font-family: var(–font-display);
+font-size: 22px;
+margin-bottom: 4px;
+}
+
+.modal-sub {
+font-family: var(–font-mono);
+font-size: 10px;
+color: var(–grey-400);
+margin-bottom: 24px;
+}
+
+.modal-actions {
+display: flex;
+justify-content: flex-end;
+gap: 10px;
+margin-top: 24px;
+}
+
+/* TASK LIST */
+.task-list { display: flex; flex-direction: column; gap: 8px; }
+
+.task-item {
+display: flex;
+align-items: center;
+gap: 12px;
+padding: 12px 16px;
+border: 1px solid var(–grey-100);
+border-radius: var(–radius);
+background: var(–white);
+transition: all 0.15s;
+}
+
+.task-item:hover { border-color: var(–grey-200); }
+.task-item.done { opacity: 0.45; }
+
+.task-check {
+width: 18px;
+height: 18px;
+border: 1.5px solid var(–grey-400);
+border-radius: 50%;
+cursor: pointer;
+flex-shrink: 0;
+display: flex;
+align-items: center;
+justify-content: center;
+transition: all 0.15s;
+font-size: 10px;
+}
+
+.task-check:hover, .task-item.done .task-check {
+background: var(–black);
+border-color: var(–black);
+color: var(–white);
+}
+
+.task-content { flex: 1; }
+.task-title { font-size: 13px; font-weight: 400; }
+.task-item.done .task-title { text-decoration: line-through; }
+
+.task-meta {
+font-family: var(–font-mono);
+font-size: 10px;
+color: var(–grey-400);
+margin-top: 2px;
+}
+
+.task-xp {
+font-family: var(–font-mono);
+font-size: 10px;
+color: var(–grey-600);
+font-weight: 500;
+white-space: nowrap;
+}
+
+.cat-badge {
+font-family: var(–font-mono);
+font-size: 9px;
+padding: 3px 10px;
+border: 1px solid var(–grey-200);
+border-radius: var(–radius-full);
+color: var(–grey-600);
+white-space: nowrap;
+}
+
+/* XP TOAST */
+.xp-toast {
+position: fixed;
+bottom: 24px;
+right: 24px;
+background: var(–black);
+color: var(–white);
+font-family: var(–font-mono);
+font-size: 13px;
+padding: 14px 22px;
+border-radius: var(–radius);
+z-index: 200;
+transform: translateY(20px);
+opacity: 0;
+transition: all 0.3s cubic-bezier(.16,1,.3,1);
+pointer-events: none;
+}
+
+.xp-toast.show { transform: translateY(0); opacity: 1; }
+
+/* LOG TABLE */
+.log-table { width: 100%; border-collapse: collapse; }
+.log-table th {
+font-family: var(–font-mono);
+font-size: 9px;
+letter-spacing: 2px;
+text-transform: uppercase;
+color: var(–grey-400);
+text-align: left;
+padding: 0 12px 12px;
+border-bottom: 1px solid var(–grey-200);
+}
+
+.log-table td {
+padding: 12px;
+font-size: 12px;
+border-bottom: 1px solid var(–grey-100);
+vertical-align: middle;
+}
+
+.log-table tr:last-child td { border-bottom: none; }
+
+/* PROGRESS BARS */
+.progress-wrap { margin-bottom: 20px; }
+.progress-label {
+display: flex;
+justify-content: space-between;
+font-family: var(–font-mono);
+font-size: 10px;
+color: var(–grey-600);
+margin-bottom: 8px;
+}
+
+.progress-bar {
+width: 100%;
+height: 3px;
+background: var(–grey-100);
+border-radius: 2px;
+overflow: hidden;
+}
+
+.progress-fill {
+height: 100%;
+background: var(–black);
+border-radius: 2px;
+transition: width 0.6s cubic-bezier(.16,1,.3,1);
+}
+
+/* OBJECTIVE CARDS */
+.obj-card {
+border: 1px solid var(–grey-100);
+border-radius: var(–radius);
+padding: 18px 20px;
+margin-bottom: 12px;
+background: var(–white);
+transition: border-color 0.15s;
+}
+
+.obj-card:hover { border-color: var(–grey-200); }
+
+.obj-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.obj-title { font-size: 14px; font-weight: 500; }
+.obj-deadline {
+font-family: var(–font-mono);
+font-size: 10px;
+color: var(–grey-400);
+white-space: nowrap;
+margin-top: 2px;
+}
+
+.obj-desc { font-size: 12px; color: var(–grey-600); margin-top: 6px; margin-bottom: 12px; }
+
+/* MOOD */
+.mood-grid {
+display: grid;
+grid-template-columns: repeat(5, 1fr);
+gap: 10px;
+margin-bottom: 24px;
+}
+
+.mood-btn {
+border: 1px solid var(–grey-100);
+background: var(–white);
+border-radius: var(–radius);
+padding: 16px 8px;
+cursor: pointer;
+text-align: center;
+transition: all 0.15s;
+font-size: 24px;
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 6px;
+}
+
+.mood-btn span:last-child {
+font-family: var(–font-mono);
+font-size: 9px;
+color: var(–grey-400);
+}
+
+.mood-btn:hover, .mood-btn.selected {
+border-color: var(–black);
+background: var(–black);
+}
+.mood-btn.selected span:last-child { color: var(–grey-400); }
+
+/* ROUTINE */
+.routine-grid {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 10px;
+}
+
+.routine-item {
+display: flex;
+align-items: center;
+gap: 12px;
+padding: 14px 16px;
+border: 1px solid var(–grey-100);
+border-radius: var(–radius);
+background: var(–white);
+cursor: pointer;
+transition: all 0.15s;
+}
+
+.routine-item:hover { border-color: var(–grey-200); }
+.routine-item.checked { background: var(–black); border-color: var(–black); color: var(–white); }
+.routine-item.checked .routine-xp { color: var(–grey-600); }
+
+.routine-icon { font-size: 18px; flex-shrink: 0; }
+.routine-label { flex: 1; font-size: 13px; }
+.routine-xp { font-family: var(–font-mono); font-size: 10px; color: var(–grey-400); }
+
+/* INCOME */
+.income-item {
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 14px 16px;
+border: 1px solid var(–grey-100);
+border-radius: var(–radius);
+margin-bottom: 8px;
+background: var(–white);
+transition: border-color 0.15s;
+}
+.income-item:hover { border-color: var(–grey-200); }
+.income-left { display: flex; flex-direction: column; gap: 3px; }
+.income-name { font-size: 13px; font-weight: 500; }
+.income-date { font-family: var(–font-mono); font-size: 10px; color: var(–grey-400); }
+.income-amount { font-family: var(–font-display); font-size: 20px; }
+.income-profit { font-size: 11px; color: var(–grey-600); font-family: var(–font-mono); }
+
+/* EMPTY STATE */
+.empty-state {
+text-align: center;
+padding: 48px 24px;
+color: var(–grey-400);
+font-family: var(–font-mono);
+font-size: 12px;
+border: 1px dashed var(–grey-100);
+border-radius: var(–radius);
+background: var(–white);
+}
+
+.empty-icon { font-size: 32px; margin-bottom: 12px; }
+
+/* SEPARATOR */
+hr { border: none; border-top: 1px solid var(–grey-200); margin: 24px 0; }
+
+/* WEEK HEATMAP */
+.week-row {
+display: flex;
+gap: 6px;
+margin-bottom: 8px;
+}
+
+.week-day {
+flex: 1;
+height: 32px;
+border-radius: var(–radius-sm);
+background: var(–surface-2);
+display: flex;
+align-items: center;
+justify-content: center;
+font-family: var(–font-mono);
+font-size: 9px;
+color: var(–grey-400);
+transition: background 0.2s;
+}
+
+.week-day.has-data { background: var(–grey-200); color: var(–black); }
+.week-day.today { background: var(–black); color: var(–white); }
+
+/* Animations */
+@keyframes fadeIn {
+from { opacity: 0; transform: translateY(8px); }
+to { opacity: 1; transform: translateY(0); }
+}
+
+.page.active { animation: fadeIn 0.2s ease; }
+
+@keyframes levelUp {
+0% { transform: scale(1); }
+50% { transform: scale(1.05); }
+100% { transform: scale(1); }
+}
+
+/* CHECK-IN BUTTON */
+.checkin-wrap {
+display: flex;
+align-items: center;
+gap: 16px;
+padding: 20px 24px;
+border: 1px solid var(–grey-100);
+border-radius: var(–radius);
+background: var(–white);
+}
+
+.checkin-wrap.done {
+background: var(–black);
+border-color: var(–black);
+color: var(–white);
+}
+
+.checkin-info { flex: 1; }
+.checkin-title { font-size: 14px; font-weight: 500; }
+.checkin-sub { font-family: var(–font-mono); font-size: 10px; color: var(–grey-400); margin-top: 4px; }
+.checkin-wrap.done .checkin-sub { color: var(–grey-600); }
+
+.btn-checkin {
+font-family: var(–font-body);
+font-size: 13px;
+font-weight: 600;
+padding: 12px 28px;
+border-radius: var(–radius-full);
+border: none;
+cursor: pointer;
+transition: all 0.2s cubic-bezier(.16,1,.3,1);
+letter-spacing: 0.3px;
+background: var(–black);
+color: var(–white);
+white-space: nowrap;
+}
+
+.btn-checkin:hover { transform: scale(1.04); background: var(–grey-600); }
+.btn-checkin:active { transform: scale(0.97); }
+.btn-checkin.done { background: var(–white); color: var(–black); cursor: default; }
+.btn-checkin.done:hover { transform: none; background: var(–white); }
+
+.checkin-pulse {
+width: 10px; height: 10px;
+border-radius: 50%;
+background: #22c55e;
+flex-shrink: 0;
+box-shadow: 0 0 0 0 rgba(34,197,94,0.4);
+animation: pulse-ring 2s ease infinite;
+}
+
+.checkin-wrap.done .checkin-pulse { background: var(–grey-600); animation: none; box-shadow: none; }
+
+@keyframes pulse-ring {
+0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
+70% { box-shadow: 0 0 0 8px rgba(34,197,94,0); }
+100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+}
+
+.level-up-anim { animation: levelUp 0.4s ease; }
+</style>
+
+</head>
+<body>
+
+<div class="app">
+
+  <!-- HEADER -->
+
+  <header>
+    <div class="header-left">
+      <div class="logo">MEI.</div>
+      <div class="header-date" id="header-date"></div>
+    </div>
+    <div class="xp-widget">
+      <div class="xp-level-label" id="xp-level-label">LVL 1 — DÉBUTANTE</div>
+      <div class="xp-bar-wrap">
+        <div class="xp-bar-fill" id="xp-bar-fill" style="width:0%"></div>
+      </div>
+      <div class="xp-numbers" id="xp-numbers">0 / 100 XP</div>
+    </div>
+  </header>
+
+  <!-- SIDEBAR -->
+
+  <nav class="sidebar">
+    <div class="sidebar-section-label">Navigation</div>
+
+```
+<button class="nav-item active" onclick="navigate('dashboard')">
+  <span class="nav-icon">◈</span> Dashboard
+</button>
+<button class="nav-item" onclick="navigate('vinted')">
+  <span class="nav-icon">💰</span> Vinted / Income
+</button>
+<button class="nav-item" onclick="navigate('apprentissage')">
+  <span class="nav-icon">📚</span> Apprentissage
+</button>
+<button class="nav-item" onclick="navigate('objectifs')">
+  <span class="nav-icon">🎯</span> Objectifs
+</button>
+<button class="nav-item" onclick="navigate('humeur')">
+  <span class="nav-icon">🧠</span> Humeur
+</button>
+<button class="nav-item" onclick="navigate('routine')">
+  <span class="nav-icon">⏰</span> Routine
+</button>
+
+<div class="sidebar-divider"></div>
+<div class="sidebar-section-label">Stats</div>
+
+<button class="nav-item" onclick="navigate('progression')">
+  <span class="nav-icon">📈</span> Progression
+</button>
+<button class="nav-item" onclick="navigate('journal')">
+  <span class="nav-icon">📋</span> Journal XP
+</button>
+
+<div class="streak-badge">
+  <div class="streak-title">🔥 Streak</div>
+  <div class="streak-count" id="streak-count">0</div>
+  <div class="streak-sub">jours consécutifs</div>
+</div>
+```
+
+  </nav>
+
+  <!-- MAIN -->
+
+  <main>
+
+```
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+  <div class="page-title">Bonjour ✦</div>
+  <div class="page-sub" id="dashboard-date-sub"></div>
+
+  <div class="grid-3">
+    <div class="card card-inverted">
+      <div class="card-label">XP Total</div>
+      <div class="card-value" id="dash-xp">0</div>
+      <div class="card-sub" id="dash-level">Niveau 1</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Revenus ce mois</div>
+      <div class="card-value" id="dash-revenus">0€</div>
+      <div class="card-sub">Vinted + Side</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Tâches aujourd'hui</div>
+      <div class="card-value" id="dash-tasks">0/0</div>
+      <div class="card-sub">complétées</div>
+    </div>
+  </div>
+
+  <div class="section-header">
+    <div class="section-title">Activité — 7 derniers jours</div>
+  </div>
+
+  <div class="week-row" id="week-heatmap"></div>
+
+  <hr>
+
+  <div id="checkin-block" style="margin-bottom:24px"></div>
+
+  <div class="section-header">
+    <div class="section-title">Tâches du jour</div>
+    <button class="btn btn-primary" onclick="openModal('modal-task')">+ Ajouter</button>
+  </div>
+  <div class="task-list" id="dashboard-tasks"></div>
+</div>
+
+<!-- VINTED -->
+<div class="page" id="page-vinted">
+  <div class="page-title">Vinted / Side Income</div>
+  <div class="page-sub">TRACK TES SALES — CHAQUE EURO COMPTE</div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-label">Profit ce mois</div>
+      <div class="card-value" id="v-profit">0€</div>
+      <div class="card-sub" id="v-profit-sub">0 ventes</div>
+    </div>
+    <div class="card card-inverted">
+      <div class="card-label">Total all-time</div>
+      <div class="card-value" id="v-total">0€</div>
+      <div class="card-sub">depuis le début</div>
+    </div>
+  </div>
+
+  <div class="section-header">
+    <div class="section-title">Ventes</div>
+    <button class="btn btn-primary" onclick="openModal('modal-vente')">+ Vente</button>
+  </div>
+  <div id="ventes-list"></div>
+</div>
+
+<!-- APPRENTISSAGE -->
+<div class="page" id="page-apprentissage">
+  <div class="page-title">Apprentissage</div>
+  <div class="page-sub">CODING, SKILLS, KNOWLEDGE — LET'S GROW</div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-label">Sessions ce mois</div>
+      <div class="card-value" id="a-sessions">0</div>
+      <div class="card-sub">sessions d'apprentissage</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Heures totales</div>
+      <div class="card-value" id="a-heures">0h</div>
+      <div class="card-sub">investies</div>
+    </div>
+  </div>
+
+  <div class="section-header">
+    <div class="section-title">Tâches apprentissage</div>
+    <button class="btn btn-primary" onclick="openTaskModal('apprentissage')">+ Ajouter</button>
+  </div>
+  <div class="task-list" id="apprentissage-tasks"></div>
+</div>
+
+<!-- OBJECTIFS -->
+<div class="page" id="page-objectifs">
+  <div class="page-title">Objectifs</div>
+  <div class="page-sub">TA VISION — PAS À PAS</div>
+
+  <div class="section-header">
+    <div class="section-title">Mes objectifs</div>
+    <button class="btn btn-primary" onclick="openModal('modal-obj')">+ Objectif</button>
+  </div>
+  <div id="objectifs-list"></div>
+</div>
+
+<!-- HUMEUR -->
+<div class="page" id="page-humeur">
+  <div class="page-title">Humeur & Bien-être</div>
+  <div class="page-sub">COMMENT TU TE SENS AUJOURD'HUI ?</div>
+
+  <div class="section-header">
+    <div class="section-title">Check-in du jour</div>
+  </div>
+
+  <div class="mood-grid">
+    <button class="mood-btn" onclick="selectMood(1, this)">😩<span>Crash</span></button>
+    <button class="mood-btn" onclick="selectMood(2, this)">😔<span>Pas top</span></button>
+    <button class="mood-btn" onclick="selectMood(3, this)">😐<span>Moyen</span></button>
+    <button class="mood-btn" onclick="selectMood(4, this)">🙂<span>Bien</span></button>
+    <button class="mood-btn" onclick="selectMood(5, this)">✨<span>On slay</span></button>
+  </div>
+
+  <div class="form-group">
+    <label class="form-label">Une note ? (optionnel)</label>
+    <textarea class="form-textarea" id="mood-note" placeholder="ce que t'as sur le cœur..."></textarea>
+  </div>
+  <button class="btn btn-primary" onclick="saveMood()">Enregistrer le check-in (+5 XP)</button>
+
+  <hr>
+
+  <div class="section-header">
+    <div class="section-title">Historique humeur</div>
+  </div>
+  <div id="mood-history"></div>
+</div>
+
+<!-- ROUTINE -->
+<div class="page" id="page-routine">
+  <div class="page-title">Routine Quotidienne</div>
+  <div class="page-sub">TES HABITUDES = TON FUTUR</div>
+
+  <div class="section-header">
+    <div class="section-title">Aujourd'hui</div>
+  </div>
+
+  <div class="routine-grid" id="routine-grid"></div>
+
+  <hr>
+  <div class="section-header">
+    <div class="section-title">Gérer mes habitudes</div>
+    <button class="btn btn-ghost" onclick="openModal('modal-habit')">+ Habitude</button>
+  </div>
+  <div id="habits-manage"></div>
+</div>
+
+<!-- PROGRESSION -->
+<div class="page" id="page-progression">
+  <div class="page-title">Progression</div>
+  <div class="page-sub">TA COURBE — VIS TON ÉVOLUTION</div>
+
+  <div class="grid-2" style="margin-bottom:32px">
+    <div class="card card-inverted">
+      <div class="card-label">Niveau actuel</div>
+      <div class="card-value" id="prog-level">1</div>
+      <div class="card-sub" id="prog-level-name">Débutante</div>
+    </div>
+    <div class="card">
+      <div class="card-label">XP pour level up</div>
+      <div class="card-value" id="prog-xp-needed">100</div>
+      <div class="card-sub">points restants</div>
+    </div>
+  </div>
+
+  <div class="section-header">
+    <div class="section-title">XP par catégorie</div>
+  </div>
+
+  <div id="cat-progress"></div>
+
+  <hr>
+
+  <div class="section-header">
+    <div class="section-title">Paliers de niveau</div>
+  </div>
+  <div id="levels-list"></div>
+</div>
+
+<!-- JOURNAL -->
+<div class="page" id="page-journal">
+  <div class="page-title">Journal XP</div>
+  <div class="page-sub">TON HISTORIQUE COMPLET</div>
+
+  <table class="log-table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Action</th>
+        <th>Catégorie</th>
+        <th>XP</th>
+      </tr>
+    </thead>
+    <tbody id="journal-body"></tbody>
+  </table>
+</div>
+```
+
+  </main>
+</div>
+
+<!-- MODALS -->
+
+<div class="modal-overlay" id="modal-task">
+  <div class="modal">
+    <div class="modal-title">Nouvelle tâche</div>
+    <div class="modal-sub">AJOUTE UNE TÂCHE POUR AUJOURD'HUI</div>
+    <div class="form-group">
+      <label class="form-label">Titre</label>
+      <input class="form-input" id="task-title-input" placeholder="ex: Lister 3 pièces sur Vinted">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Catégorie</label>
+      <select class="form-select" id="task-cat-input">
+        <option value="vinted">💰 Vinted / Income</option>
+        <option value="apprentissage">📚 Apprentissage</option>
+        <option value="objectifs">🎯 Objectifs</option>
+        <option value="routine">⏰ Routine</option>
+        <option value="autre">◈ Autre</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">XP récompense</label>
+      <select class="form-select" id="task-xp-input">
+        <option value="5">5 XP — Petite tâche</option>
+        <option value="10" selected>10 XP — Tâche normale</option>
+        <option value="20">20 XP — Tâche importante</option>
+        <option value="30">30 XP — Big move</option>
+        <option value="50">50 XP — Tâche majeure</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-task')">Annuler</button>
+      <button class="btn btn-primary" onclick="addTask()">Créer la tâche</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-vente">
+  <div class="modal">
+    <div class="modal-title">Nouvelle vente</div>
+    <div class="modal-sub">ENREGISTRE TA SALE 💰</div>
+    <div class="form-group">
+      <label class="form-label">Article</label>
+      <input class="form-input" id="vente-article" placeholder="ex: Pull Zara beige">
+    </div>
+    <div class="grid-2" style="gap:12px;margin-bottom:16px">
+      <div>
+        <label class="form-label" style="display:block;font-family:var(--font-mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--grey-600);margin-bottom:6px">Prix d'achat (€)</label>
+        <input class="form-input" id="vente-achat" type="number" placeholder="0" min="0">
+      </div>
+      <div>
+        <label class="form-label" style="display:block;font-family:var(--font-mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--grey-600);margin-bottom:6px">Prix de vente (€)</label>
+        <input class="form-input" id="vente-prix" type="number" placeholder="0" min="0">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes</label>
+      <input class="form-input" id="vente-note" placeholder="état, marque, remarques...">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-vente')">Annuler</button>
+      <button class="btn btn-primary" onclick="addVente()">Enregistrer (+15 XP)</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-obj">
+  <div class="modal">
+    <div class="modal-title">Nouvel objectif</div>
+    <div class="modal-sub">POSE TON INTENTION</div>
+    <div class="form-group">
+      <label class="form-label">Titre</label>
+      <input class="form-input" id="obj-title" placeholder="ex: Gagner 500€ sur Vinted en juin">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <textarea class="form-textarea" id="obj-desc" placeholder="Pourquoi cet objectif compte pour toi..."></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Date limite</label>
+      <input class="form-input" id="obj-deadline" type="date">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Catégorie</label>
+      <select class="form-select" id="obj-cat">
+        <option value="vinted">💰 Vinted / Income</option>
+        <option value="apprentissage">📚 Apprentissage</option>
+        <option value="perso">🎯 Perso</option>
+        <option value="autre">◈ Autre</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-obj')">Annuler</button>
+      <button class="btn btn-primary" onclick="addObjectif()">Ajouter l'objectif</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-habit">
+  <div class="modal">
+    <div class="modal-title">Nouvelle habitude</div>
+    <div class="modal-sub">CONSTRUIS TA ROUTINE</div>
+    <div class="form-group">
+      <label class="form-label">Nom de l'habitude</label>
+      <input class="form-input" id="habit-name" placeholder="ex: Lire 20 min, Boire 1.5L d'eau...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Emoji</label>
+      <input class="form-input" id="habit-icon" placeholder="📖" maxlength="2">
+    </div>
+    <div class="form-group">
+      <label class="form-label">XP par completion</label>
+      <select class="form-select" id="habit-xp">
+        <option value="3">3 XP</option>
+        <option value="5" selected>5 XP</option>
+        <option value="10">10 XP</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-habit')">Annuler</button>
+      <button class="btn btn-primary" onclick="addHabit()">Créer</button>
+    </div>
+  </div>
+</div>
+
+<div class="xp-toast" id="xp-toast"></div>
+
+<script>
+// ─────────────────────────────────────────────
+// CONFIG NOTION — remplace le token si tu en recrées un
+// ─────────────────────────────────────────────
+const NOTION_TOKEN = 'ntn_b63853872259qxDtdSvfI1FyZ0oyjVV81NuOViwokSd9t0';
+const NOTION_DB_ID = '34d17c9946d980d0bebbdab878146c18';
+const NOTION_API  = 'https://api.notion.com/v1';
+const PROXY       = 'https://corsproxy.io/?';
+
+// ─────────────────────────────────────────────
+// NOTION API
+// ─────────────────────────────────────────────
+async function notionReq(path, method = 'GET', body = null) {
+  const url = PROXY + encodeURIComponent(NOTION_API + path);
+  const opts = {
+    method,
+    headers: {
+      'Authorization': `Bearer ${NOTION_TOKEN}`,
+      'Notion-Version': '2022-06-28',
+      'Content-Type': 'application/json',
+    },
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(url, opts);
+  if (!res.ok) throw new Error(`Notion ${res.status}`);
+  return res.json();
+}
+
+async function queryDB(filter = null) {
+  const body = { page_size: 100 };
+  if (filter) body.filter = filter;
+  const data = await notionReq(`/databases/${NOTION_DB_ID}/query`, 'POST', body);
+  return data.results || [];
+}
+
+async function createRow(props) {
+  return notionReq('/pages', 'POST', {
+    parent: { database_id: NOTION_DB_ID },
+    properties: props,
+  });
+}
+
+async function updateRow(id, props) {
+  return notionReq(`/pages/${id}`, 'PATCH', { properties: props });
+}
+
+async function archiveRow(id) {
+  return notionReq(`/pages/${id}`, 'PATCH', { archived: true });
+}
+
+// ─────────────────────────────────────────────
+// PROPERTY HELPERS
+// ─────────────────────────────────────────────
+const nTitle    = v => ({ title: [{ text: { content: String(v) } }] });
+const nText     = v => ({ rich_text: [{ text: { content: String(v || '') } }] });
+const nNumber   = v => ({ number: Number(v) || 0 });
+const nSelect   = v => ({ select: { name: String(v) } });
+const nDate     = v => ({ date: { start: v || new Date().toISOString() } });
+const nCheck    = v => ({ checkbox: !!v });
+
+const gTitle    = r => r.properties?.Titre?.title?.[0]?.plain_text || '';
+const gText     = (r, k) => r.properties?.[k]?.rich_text?.[0]?.plain_text || '';
+const gNumber   = (r, k) => r.properties?.[k]?.number || 0;
+const gSelect   = (r, k) => r.properties?.[k]?.select?.name || '';
+const gDate     = (r, k) => r.properties?.[k]?.date?.start || null;
+const gCheck    = (r, k) => r.properties?.[k]?.checkbox || false;
+
+// ─────────────────────────────────────────────
+// LOCAL CACHE — streak + habits config + checkins
+// (données légères qui n'ont pas besoin d'être dans Notion)
+// ─────────────────────────────────────────────
+const LC = {
+  get: (k, d) => { try { const v = localStorage.getItem('mei_' + k); return v ? JSON.parse(v) : d; } catch { return d; } },
+  set: (k, v) => { try { localStorage.setItem('mei_' + k, JSON.stringify(v)); } catch {} },
+};
+
+// ─────────────────────────────────────────────
+// XP LEVELS
+// ─────────────────────────────────────────────
+const LEVELS = [
+  { level: 1, name: 'Débutante',    xp: 0    },
+  { level: 2, name: 'En route',     xp: 100  },
+  { level: 3, name: 'En mouvement', xp: 250  },
+  { level: 4, name: 'Déterminée',   xp: 500  },
+  { level: 5, name: 'Momentum',     xp: 900  },
+  { level: 6, name: 'Slay queen',   xp: 1500 },
+  { level: 7, name: 'Self-made',    xp: 2200 },
+  { level: 8, name: 'Unstoppable',  xp: 3000 },
+  { level: 9, name: 'Iconic',       xp: 4000 },
+  { level: 10, name: '★ LEGEND ★', xp: 5500 },
+];
+
+function getLevelInfo(totalXP) {
+  let current = LEVELS[0], next = LEVELS[1];
+  for (let i = LEVELS.length - 1; i >= 0; i--) {
+    if (totalXP >= LEVELS[i].xp) { current = LEVELS[i]; next = LEVELS[i + 1] || null; break; }
+  }
+  const xpInLevel = totalXP - current.xp;
+  const xpNeeded  = next ? next.xp - current.xp : 9999;
+  const pct = Math.min(100, Math.round((xpInLevel / xpNeeded) * 100));
+  return { current, next, xpInLevel, xpNeeded, pct };
+}
+
+// ─────────────────────────────────────────────
+// XP SYSTEM — tout dans Notion
+// ─────────────────────────────────────────────
+async function getTotalXP() {
+  const rows = await queryDB({ property: 'Type', select: { equals: 'xp_state' } });
+  return rows[0] ? gNumber(rows[0], 'Montant') : 0;
+}
+
+async function addXP(amount, reason, category = 'autre') {
+  try {
+    // 1. Mise à jour ou création du compteur XP global
+    const xpRows = await queryDB({ property: 'Type', select: { equals: 'xp_state' } });
+    const currentXP = xpRows[0] ? gNumber(xpRows[0], 'Montant') : 0;
+    const newXP = currentXP + amount;
+
+    if (xpRows[0]) {
+      await updateRow(xpRows[0].id, { 'Montant': nNumber(newXP) });
+    } else {
+      await createRow({ 'Titre': nTitle('XP Total'), 'Type': nSelect('xp_state'), 'Montant': nNumber(newXP) });
+    }
+
+    // 2. Log de l'action dans Notion (1 ligne = 1 action)
+    await createRow({
+      'Titre':     nTitle(reason),
+      'Type':      nSelect('xp_log'),
+      'Categorie': nSelect(category),
+      'XP':        nNumber(amount),
+      'Date':      nDate(new Date().toISOString()),
+    });
+
+    // 3. XP par catégorie
+    const catRows = await queryDB({ and: [
+      { property: 'Type',      select:    { equals: 'cat_xp'  } },
+      { property: 'Categorie', select:    { equals: category  } },
+    ]});
+    if (catRows[0]) {
+      await updateRow(catRows[0].id, { 'Montant': nNumber(gNumber(catRows[0], 'Montant') + amount) });
+    } else {
+      await createRow({ 'Titre': nTitle(`XP ${category}`), 'Type': nSelect('cat_xp'), 'Categorie': nSelect(category), 'Montant': nNumber(amount) });
+    }
+
+    // 4. Level up check
+    const before = getLevelInfo(currentXP), after = getLevelInfo(newXP);
+    if (after.current.level > before.current.level) {
+      showToast(`🎉 LEVEL UP ! Niveau ${after.current.level} — ${after.current.name}`);
+    } else {
+      showToast(`+${amount} XP — ${reason}`);
+    }
+
+    await refreshXPUI();
+    updateStreak();
+  } catch(e) {
+    console.error(e);
+    showToast('⚠️ Erreur Notion — vérifie ta connexion');
+  }
+}
+
+async function refreshXPUI() {
+  const totalXP = await getTotalXP();
+  const info = getLevelInfo(totalXP);
+  document.getElementById('xp-bar-fill').style.width   = info.pct + '%';
+  document.getElementById('xp-level-label').textContent = `LVL ${info.current.level} — ${info.current.name.toUpperCase()}`;
+  document.getElementById('xp-numbers').textContent     = `${info.xpInLevel} / ${info.xpNeeded} XP`;
+  document.getElementById('dash-xp').textContent        = totalXP;
+  document.getElementById('dash-level').textContent     = `Niveau ${info.current.level} — ${info.current.name}`;
+  document.getElementById('prog-level').textContent     = info.current.level;
+  document.getElementById('prog-level-name').textContent = info.current.name;
+  document.getElementById('prog-xp-needed').textContent = info.next ? (info.xpNeeded - info.xpInLevel) : '—';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('xp-toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function showLoading(id) {
+  const el = document.getElementById(id);
+  if (el) el.innerHTML = `<div style="padding:24px;text-align:center;font-family:var(--font-mono);font-size:11px;color:var(--grey-400)">Chargement…</div>`;
+}
+
+function showEmpty(id, icon, msg) {
+  const el = document.getElementById(id);
+  if (el) el.innerHTML = `<div class="empty-state"><div class="empty-icon">${icon}</div>${msg}</div>`;
+}
+
+// ─────────────────────────────────────────────
+// STREAK — localStorage (juste un compteur)
+// ─────────────────────────────────────────────
+function updateStreak() {
+  const today = new Date().toDateString();
+  const s = LC.get('streak', { last: null, count: 0 });
+  const yesterday = new Date(Date.now() - 86400000).toDateString();
+  if (s.last === today) {
+    // déjà compté
+  } else if (s.last === yesterday) {
+    s.count++; s.last = today; LC.set('streak', s);
+  } else {
+    s.count = 1; s.last = today; LC.set('streak', s);
+  }
+  document.getElementById('streak-count').textContent = s.count;
+}
+
+// ─────────────────────────────────────────────
+// NAVIGATION
+// ─────────────────────────────────────────────
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  event.currentTarget.classList.add('active');
+  const renders = { dashboard: renderDashboard, vinted: renderVinted, apprentissage: renderApprentissage, objectifs: renderObjectifs, humeur: renderHumeur, routine: renderRoutine, progression: renderProgression, journal: renderJournal };
+  if (renders[page]) renders[page]();
+}
+
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+
+function catLabel(cat) {
+  return { vinted: '💰 Vinted', apprentissage: '📚 Apprentissage', objectifs: '🎯 Objectifs', routine: '⏰ Routine', humeur: '🧠 Humeur', autre: '◈ Autre' }[cat] || cat;
+}
+
+// ─────────────────────────────────────────────
+// CHECKIN — Notion
+// ─────────────────────────────────────────────
+function renderCheckin() {
+  const today = new Date().toDateString();
+  const checkins = LC.get('checkins', {});
+  const done = !!checkins[today];
+  const el = document.getElementById('checkin-block');
+  const timeStr = done ? new Date(checkins[today]).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : null;
+  el.innerHTML = `
+    <div class="checkin-wrap ${done ? 'done' : ''}">
+      <div class="checkin-pulse"></div>
+      <div class="checkin-info">
+        <div class="checkin-title">${done ? '✓ Tu étais là aujourd\'hui' : 'Tu es là ?'}</div>
+        <div class="checkin-sub">${done ? `Check-in à ${timeStr} · +20 XP gagné` : 'Clique pour marquer ta présence du jour'}</div>
+      </div>
+      ${done
+        ? `<button class="btn-checkin done">Présente ✓</button>`
+        : `<button class="btn-checkin" onclick="doCheckin()">J'étais là ✦</button>`}
+    </div>`;
+}
+
+async function doCheckin() {
+  const today = new Date().toDateString();
+  const checkins = LC.get('checkins', {});
+  if (checkins[today]) return;
+  checkins[today] = new Date().toISOString();
+  LC.set('checkins', checkins);
+  renderCheckin();
+  await addXP(20, 'Check-in quotidien', 'routine');
+}
+
+// ─────────────────────────────────────────────
+// DASHBOARD
+// ─────────────────────────────────────────────
+async function renderDashboard() {
+  renderCheckin();
+  await renderTaskList('dashboard-tasks');
+  await updateDashStats();
+  await renderWeekHeatmap();
+}
+
+async function updateDashStats() {
+  // Tâches du jour
+  const today = new Date().toISOString().split('T')[0];
+  const taskRows = await queryDB({ and: [
+    { property: 'Type', select: { equals: 'task' } },
+    { property: 'Date', date: { on_or_after: today } },
+    { property: 'Date', date: { on_or_before: today + 'T23:59:59Z' } },
+  ]});
+  const done = taskRows.filter(r => gCheck(r, 'Done')).length;
+  document.getElementById('dash-tasks').textContent = `${done}/${taskRows.length}`;
+
+  // Revenus ce mois
+  const firstOfMonth = new Date(); firstOfMonth.setDate(1); firstOfMonth.setHours(0,0,0,0);
+  const venteRows = await queryDB({ and: [
+    { property: 'Type', select: { equals: 'vente' } },
+    { property: 'Date', date: { on_or_after: firstOfMonth.toISOString() } },
+  ]});
+  const profit = venteRows.reduce((s, r) => s + (gNumber(r, 'Montant') - gNumber(r, 'Achat')), 0);
+  document.getElementById('dash-revenus').textContent = profit.toFixed(0) + '€';
+}
+
+async function renderWeekHeatmap() {
+  const rows = await queryDB({ property: 'Type', select: { equals: 'xp_log' } });
+  const el = document.getElementById('week-heatmap');
+  const days = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+  const today = new Date();
+  el.innerHTML = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(today); d.setDate(today.getDate() - (6 - i));
+    const ds = d.toISOString().split('T')[0];
+    const hasData = rows.some(r => (gDate(r, 'Date') || '').startsWith(ds));
+    const isToday = ds === today.toISOString().split('T')[0];
+    const cls = isToday ? 'today' : hasData ? 'has-data' : '';
+    return `<div class="week-day ${cls}">${days[(d.getDay() + 6) % 7]}</div>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────────────
+// TASKS — Notion
+// ─────────────────────────────────────────────
+function openTaskModal(cat) {
+  document.getElementById('task-cat-input').value = cat;
+  openModal('modal-task');
+}
+
+async function addTask() {
+  const title = document.getElementById('task-title-input').value.trim();
+  const cat   = document.getElementById('task-cat-input').value;
+  const xp    = parseInt(document.getElementById('task-xp-input').value);
+  if (!title) return;
+  try {
+    await createRow({
+      'Titre':     nTitle(title),
+      'Type':      nSelect('task'),
+      'Categorie': nSelect(cat),
+      'XP':        nNumber(xp),
+      'Done':      nCheck(false),
+      'Date':      nDate(new Date().toISOString()),
+    });
+    document.getElementById('task-title-input').value = '';
+    closeModal('modal-task');
+    await renderTaskList('dashboard-tasks');
+    await renderTaskList('apprentissage-tasks', 'apprentissage');
+    await updateDashStats();
+  } catch(e) { showToast('⚠️ Erreur Notion'); }
+}
+
+async function toggleTask(rowId, currentDone, xp, title, cat) {
+  try {
+    await updateRow(rowId, { 'Done': nCheck(!currentDone) });
+    if (!currentDone) await addXP(xp, title, cat);
+    await renderTaskList('dashboard-tasks');
+    await renderTaskList('apprentissage-tasks', 'apprentissage');
+    await updateDashStats();
+  } catch(e) { showToast('⚠️ Erreur Notion'); }
+}
+
+async function deleteTask(rowId) {
+  try {
+    await archiveRow(rowId);
+    await renderTaskList('dashboard-tasks');
+    await renderTaskList('apprentissage-tasks', 'apprentissage');
+    await updateDashStats();
+  } catch(e) { showToast('⚠️ Erreur Notion'); }
+}
+
+async function renderTaskList(containerId, filterCat = null) {
+  showLoading(containerId);
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const filters = [
+      { property: 'Type', select: { equals: 'task' } },
+      { property: 'Date', date: { on_or_after: today } },
+      { property: 'Date', date: { on_or_before: today + 'T23:59:59Z' } },
+    ];
+    if (filterCat) filters.push({ property: 'Categorie', select: { equals: filterCat } });
+    const rows = await queryDB({ and: filters });
+    const el = document.getElementById(containerId);
+    if (!rows.length) { showEmpty(containerId, '◈', 'Aucune tâche aujourd\'hui<br>Ajoute-en une !'); return; }
+    el.innerHTML = rows.map(r => {
+      const title = gTitle(r), cat = gSelect(r, 'Categorie'), xp = gNumber(r, 'XP'), done = gCheck(r, 'Done');
+      return `
+        <div class="task-item ${done ? 'done' : ''}">
+          <div class="task-check" onclick="toggleTask('${r.id}',${done},${xp},'${title.replace(/'/g,"\\'")}','${cat}')">${done ? '✓' : ''}</div>
+          <div class="task-content">
+            <div class="task-title">${title}</div>
+            <div class="task-meta">${catLabel(cat)}</div>
+          </div>
+          <div class="task-xp">+${xp} XP</div>
+          <button class="btn btn-danger" onclick="deleteTask('${r.id}')">✕</button>
+        </div>`;
+    }).join('');
+  } catch(e) { showEmpty(containerId, '⚠️', 'Erreur chargement — vérifie Notion'); }
+}
+
+// ─────────────────────────────────────────────
+// VINTED — Notion
+// ─────────────────────────────────────────────
+async function addVente() {
+  const article = document.getElementById('vente-article').value.trim();
+  const achat   = parseFloat(document.getElementById('vente-achat').value) || 0;
+  const prix    = parseFloat(document.getElementById('vente-prix').value) || 0;
+  const note    = document.getElementById('vente-note').value.trim();
+  if (!article) return;
+  try {
+    await createRow({
+      'Titre':     nTitle(article),
+      'Type':      nSelect('vente'),
+      'Categorie': nSelect('vinted'),
+      'Montant':   nNumber(prix),
+      'Achat':     nNumber(achat),
+      'Note':      nText(note),
+      'Date':      nDate(new Date().toISOString()),
+    });
+    ['vente-article','vente-achat','vente-prix','vente-note'].forEach(id => document.getElementById(id).value = '');
+    closeModal('modal-vente');
+    await addXP(15, `Vente : ${article}`, 'vinted');
+    await renderVinted();
+  } catch(e) { showToast('⚠️ Erreur Notion'); }
+}
+
+async function deleteVente(rowId) {
+  try { await archiveRow(rowId); await renderVinted(); } catch(e) { showToast('⚠️ Erreur Notion'); }
+}
+
+async function renderVinted() {
+  showLoading('ventes-list');
+  try {
+    const rows = await queryDB({ property: 'Type', select: { equals: 'vente' } });
+    const firstOfMonth = new Date(); firstOfMonth.setDate(1); firstOfMonth.setHours(0,0,0,0);
+    const monthRows = rows.filter(r => new Date(gDate(r, 'Date')) >= firstOfMonth);
+    const monthProfit = monthRows.reduce((s, r) => s + (gNumber(r, 'Montant') - gNumber(r, 'Achat')), 0);
+    const totalProfit = rows.reduce((s, r) => s + (gNumber(r, 'Montant') - gNumber(r, 'Achat')), 0);
+
+    document.getElementById('v-profit').textContent     = monthProfit.toFixed(2) + '€';
+    document.getElementById('v-profit-sub').textContent = `${monthRows.length} vente${monthRows.length > 1 ? 's' : ''} ce mois`;
+    document.getElementById('v-total').textContent      = totalProfit.toFixed(2) + '€';
+
+    const el = document.getElementById('ventes-list');
+    if (!rows.length) { showEmpty('ventes-list', '💰', 'Aucune vente enregistrée<br>Lance-toi !'); return; }
+    el.innerHTML = rows.map(r => {
+      const article = gTitle(r), achat = gNumber(r, 'Achat'), prix = gNumber(r, 'Montant');
+      const note = gText(r, 'Note'), profit = prix - achat;
+      const d = new Date(gDate(r, 'Date'));
+      return `
+        <div class="income-item">
+          <div class="income-left">
+            <div class="income-name">${article}</div>
+            <div class="income-date">${d.toLocaleDateString('fr-FR')}${note ? ' · ' + note : ''}</div>
+            <div class="income-profit">Acheté ${achat}€ → Vendu ${prix}€ = <strong>+${profit.toFixed(2)}€</strong></div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+            <div class="income-amount">${prix}€</div>
+            <button class="btn btn-danger" onclick="deleteVente('${r.id}')">Supprimer</button>
+          </div>
+        </div>`;
+    }).join('');
+  } catch(e) { showEmpty('ventes-list', '⚠️', 'Erreur chargement Notion'); }
+}
+
+// ─────────────────────────────────────────────
+// APPRENTISSAGE
+// ─────────────────────────────────────────────
+async function renderApprentissage() {
+  try {
+    const firstOfMonth = new Date(); firstOfMonth.setDate(1); firstOfMonth.setHours(0,0,0,0);
+    const rows = await queryDB({ and: [
+      { property: 'Type',      select: { equals: 'task'          } },
+      { property: 'Categorie', select: { equals: 'apprentissage' } },
+      { property: 'Date',      date:   { on_or_after: firstOfMonth.toISOString() } },
+    ]});
+    const done = rows.filter(r => gCheck(r, 'Done'));
+    document.getElementById('a-sessions').textContent = done.length;
+    document.getElementById('a-heures').textContent   = done.length + 'h';
+  } catch(e) {}
+  await renderTaskList('apprentissage-tasks', 'apprentissage');
+}
+
+// ─────────────────────────────────────────────
+// OBJECTIFS — Notion
+// ─────────────────────────────────────────────
+async function addObjectif() {
+  const title    = document.getElementById('obj-title').value.trim();
+  const desc     = document.getElementById('obj-desc').value.trim();
+  const deadline = document.getElementById('obj-deadline').value;
+  const cat      = document.getElementById('obj-cat').value;
+  if (!title) return;
+  try {
+    await createRow({
+      'Titre':     nTitle(title),
+      'Type':      nSelect('objectif'),
+      'Categorie': nSelect(cat),
+      'Note':      nText(desc),
+      'Done':      nCheck(false),
+      'Date':      deadline ? nDate(deadline) : nDate(new Date().toISOString()),
+    });
+    ['obj-title','obj-desc','obj-deadline'].forEach(id => document.getElementById(id).value = '');
+    closeModal('modal-obj');
+    await addXP(10, `Objectif posé : ${title}`, 'objectifs');
+    await renderObjectifs();
+  } catch(e) { showToast('⚠️ Erreur Notion'); }
+}
+
+async function toggleObjectif(rowId, currentDone, title) {
+  try {
+    await updateRow(rowId, { 'Done': nCheck(!currentDone) });
+    if (!currentDone) await addXP(50, `Objectif atteint : ${title}`, 'objectifs');
+    await renderObjectifs();
+  } catch(e) { showToast('⚠️ Erreur Notion'); }
+}
+
+async function deleteObjectif(rowId) {
+  try { await archiveRow(rowId); await renderObjectifs(); } catch(e) { showToast('⚠️ Erreur Notion'); }
+}
+
+async function renderObjectifs() {
+  showLoading('objectifs-list');
+  try {
+    const rows = await queryDB({ property: 'Type', select: { equals: 'objectif' } });
+    const el = document.getElementById('objectifs-list');
+    if (!rows.length) { showEmpty('objectifs-list', '🎯', 'Aucun objectif posé<br>Définis ta vision !'); return; }
+    el.innerHTML = rows.map(r => {
+      const title    = gTitle(r), cat = gSelect(r, 'Categorie'), desc = gText(r, 'Note');
+      const done     = gCheck(r, 'Done'), deadline = gDate(r, 'Date');
+      const daysLeft = deadline ? Math.ceil((new Date(deadline) - new Date()) / 86400000) : null;
+      return `
+        <div class="obj-card" style="${done ? 'opacity:0.5' : ''}">
+          <div class="obj-header">
+            <div>
+              <div class="obj-title" style="${done ? 'text-decoration:line-through' : ''}">${title}</div>
+              <div class="obj-deadline">
+                ${deadline ? `Deadline : ${new Date(deadline).toLocaleDateString('fr-FR')} ${daysLeft !== null && daysLeft >= 0 ? `(${daysLeft}j restants)` : '(passée)'}` : 'Pas de deadline'}
+              </div>
+            </div>
+            <span class="cat-badge">${catLabel(cat)}</span>
+          </div>
+          ${desc ? `<div class="obj-desc">${desc}</div>` : ''}
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button class="btn btn-ghost" style="font-size:11px;padding:6px 14px" onclick="toggleObjectif('${r.id}',${done},'${title.replace(/'/g,"\\'")}')">
+              ${done ? 'Réouvrir' : '✓ Marquer atteint (+50 XP)'}
+            </button>
+            <button class="btn btn-danger" onclick="deleteObjectif('${r.id}')">Supprimer</button>
+          </div>
+        </div>`;
+    }).join('');
+  } catch(e) { showEmpty('objectifs-list', '⚠️', 'Erreur chargement Notion'); }
+}
+
+// ─────────────────────────────────────────────
+// HUMEUR — Notion
+// ─────────────────────────────────────────────
+let selectedMood = null;
+
+function selectMood(score, btn) {
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedMood = score;
+}
+
+const moodEmojis = { 1: '😩', 2: '😔', 3: '😐', 4: '🙂', 5: '✨' };
+const moodNames  = { 1: 'Crash', 2: 'Pas top', 3: 'Moyen', 4: 'Bien', 5: 'On slay' };
+
+async function saveMood() {
+  if (!selectedMood) { showToast('Sélectionne une humeur !'); return; }
+  const note = document.getElementById('mood-note').value.trim();
+  try {
+    await createRow({
+      'Titre':     nTitle(`Humeur : ${moodNames[selectedMood]}`),
+      'Type':      nSelect('mood'),
+      'Categorie': nSelect('humeur'),
+      'XP':        nNumber(selectedMood),
+      'Note':      nText(note),
+      'Date':      nDate(new Date().toISOString()),
+    });
+    document.getElementById('mood-note').value = '';
+    document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+    selectedMood = null;
+    await addXP(5, 'Check-in humeur', 'humeur');
+    await renderHumeur();
+  } catch(e) { showToast('⚠️ Erreur Notion'); }
+}
+
+async function renderHumeur() {
+  showLoading('mood-history');
+  try {
+    const rows = await queryDB({ property: 'Type', select: { equals: 'mood' } });
+    const el = document.getElementById('mood-history');
+    if (!rows.length) { showEmpty('mood-history', '🧠', 'Pas encore de check-ins'); return; }
+    el.innerHTML = rows.slice(0, 10).map(r => {
+      const score = gNumber(r, 'XP'), note = gText(r, 'Note'), date = gDate(r, 'Date');
+      return `
+        <div class="income-item">
+          <div class="income-left">
+            <div class="income-name">${moodEmojis[score] || '😐'} ${moodNames[score] || '—'}</div>
+            <div class="income-date">${new Date(date).toLocaleDateString('fr-FR')} à ${new Date(date).toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'})}</div>
+            ${note ? `<div class="income-profit">${note}</div>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+  } catch(e) { showEmpty('mood-history', '⚠️', 'Erreur chargement Notion'); }
+}
+
+// ─────────────────────────────────────────────
+// ROUTINE — config en localStorage, check-ins dans Notion
+// ─────────────────────────────────────────────
+const DEFAULT_HABITS = [
+  { id: 'h1', name: 'Boire 1.5L eau',            icon: '💧', xp: 5  },
+  { id: 'h2', name: 'Lire 20 min',                icon: '📖', xp: 5  },
+  { id: 'h3', name: 'Pas de réseaux avant 10h',   icon: '📵', xp: 10 },
+  { id: 'h4', name: 'Code / apprentissage',        icon: '💻', xp: 10 },
+];
+
+function getHabits() { return LC.get('habits', DEFAULT_HABITS); }
+
+function addHabit() {
+  const name = document.getElementById('habit-name').value.trim();
+  const icon = document.getElementById('habit-icon').value.trim() || '✦';
+  const xp   = parseInt(document.getElementById('habit-xp').value);
+  if (!name) return;
+  const habits = getHabits();
+  habits.push({ id: 'h' + Date.now(), name, icon, xp });
+  LC.set('habits', habits);
+  document.getElementById('habit-name').value = '';
+  document.getElementById('habit-icon').value = '';
+  closeModal('modal-habit');
+  renderRoutine();
+}
+
+function deleteHabit(id) {
+  LC.set('habits', getHabits().filter(h => h.id !== id));
+  renderRoutine();
+}
+
+async function toggleHabit(id) {
+  const today   = new Date().toDateString();
+  const done    = LC.get('habits_done', {});
+  if (!done[today]) done[today] = {};
+  const habits  = getHabits();
+  const habit   = habits.find(h => h.id === id);
+  if (!habit) return;
+
+  if (done[today][id]) {
+    delete done[today][id];
+    LC.set('habits_done', done);
+    renderRoutine();
+  } else {
+    done[today][id] = true;
+    LC.set('habits_done', done);
+    renderRoutine();
+    await addXP(habit.xp, `Habitude : ${habit.name}`, 'routine');
+  }
+}
+
+function renderRoutine() {
+  const habits = getHabits();
+  const today  = new Date().toDateString();
+  const done   = LC.get('habits_done', {})[today] || {};
+
+  document.getElementById('routine-grid').innerHTML = habits.map(h => `
+    <div class="routine-item ${done[h.id] ? 'checked' : ''}" onclick="toggleHabit('${h.id}')">
+      <div class="routine-icon">${h.icon}</div>
+      <div class="routine-label">${h.name}</div>
+      <div class="routine-xp">+${h.xp} XP</div>
+    </div>`).join('');
+
+  document.getElementById('habits-manage').innerHTML = habits.map(h => `
+    <div class="income-item">
+      <div class="income-name">${h.icon} ${h.name}</div>
+      <button class="btn btn-danger" onclick="deleteHabit('${h.id}')">Supprimer</button>
+    </div>`).join('');
+}
+
+// ─────────────────────────────────────────────
+// PROGRESSION — lit depuis Notion
+// ─────────────────────────────────────────────
+async function renderProgression() {
+  try {
+    const catRows = await queryDB({ property: 'Type', select: { equals: 'cat_xp' } });
+    const cats = [
+      { key: 'vinted',        label: '💰 Vinted / Income' },
+      { key: 'apprentissage', label: '📚 Apprentissage'   },
+      { key: 'objectifs',     label: '🎯 Objectifs'       },
+      { key: 'humeur',        label: '🧠 Humeur'          },
+      { key: 'routine',       label: '⏰ Routine'         },
+    ];
+    const xpByCat = {};
+    catRows.forEach(r => { xpByCat[gSelect(r, 'Categorie')] = gNumber(r, 'Montant'); });
+    const maxXP = Math.max(...cats.map(c => xpByCat[c.key] || 0), 1);
+
+    document.getElementById('cat-progress').innerHTML = cats.map(c => {
+      const xp = xpByCat[c.key] || 0, pct = Math.round((xp / maxXP) * 100);
+      return `
+        <div class="progress-wrap">
+          <div class="progress-label"><span>${c.label}</span><span>${xp} XP</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+        </div>`;
+    }).join('');
+
+    const totalXP = await getTotalXP();
+    document.getElementById('levels-list').innerHTML = LEVELS.map(l => {
+      const reached = totalXP >= l.xp;
+      return `
+        <div class="income-item" style="${reached ? '' : 'opacity:0.4'}">
+          <div class="income-left">
+            <div class="income-name">${reached ? '✓' : '○'} Niveau ${l.level} — ${l.name}</div>
+            <div class="income-date">${l.xp} XP requis</div>
+          </div>
+          ${reached ? '<span style="font-family:var(--font-mono);font-size:10px;color:var(--grey-400)">DÉBLOQUÉ</span>' : ''}
+        </div>`;
+    }).join('');
+  } catch(e) { showToast('⚠️ Erreur chargement progression'); }
+}
+
+// ─────────────────────────────────────────────
+// JOURNAL — lit le xp_log depuis Notion
+// ─────────────────────────────────────────────
+async function renderJournal() {
+  const body = document.getElementById('journal-body');
+  body.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--grey-400);padding:24px;font-family:var(--font-mono);font-size:11px">Chargement…</td></tr>`;
+  try {
+    const rows = await queryDB({ property: 'Type', select: { equals: 'xp_log' } });
+    if (!rows.length) {
+      body.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--grey-400);padding:32px;font-family:var(--font-mono);font-size:11px">Aucune action enregistrée</td></tr>`;
+      return;
+    }
+    body.innerHTML = rows.map(r => `
+      <tr>
+        <td style="font-family:var(--font-mono);color:var(--grey-400)">${new Date(gDate(r,'Date')).toLocaleDateString('fr-FR')}</td>
+        <td>${gTitle(r)}</td>
+        <td><span class="cat-badge">${catLabel(gSelect(r,'Categorie'))}</span></td>
+        <td style="font-family:var(--font-mono);font-weight:500">+${gNumber(r,'XP')}</td>
+      </tr>`).join('');
+  } catch(e) {
+    body.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--grey-400);padding:24px">⚠️ Erreur Notion</td></tr>`;
+  }
+}
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+async function init() {
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  document.getElementById('header-date').textContent        = dateStr;
+  document.getElementById('dashboard-date-sub').textContent = dateStr.toUpperCase();
+
+  updateStreak();
+  await refreshXPUI();
+  await renderDashboard();
+}
+
+init();
+</script>
+
+</body>
+</html>
+  const url = PROXY + encodeURIComponent(NOTION_API + path);
+  const opts = {
+    method,
+    headers: {
+      'Authorization': `Bearer ${NOTION_TOKEN}`,
+      'Notion-Version': '2022-06-28',
+      'Content-Type': 'application/json',
+    },
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(url, opts);
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Notion API ${res.status}: ${err}`);
+  }
+  return res.json();
+}
+
+async function queryDB(filter = null) {
+const body = { page_size: 100 };
+if (filter) body.filter = filter;
+const data = await notionRequest(`/databases/${NOTION_DB_ID}/query`, ‘POST’, body);
+return data.results || [];
+}
+
+async function createPage(props) {
+return notionRequest(’/pages’, ‘POST’, {
+parent: { database_id: NOTION_DB_ID },
+properties: props,
+});
+}
+
+async function updatePage(pageId, props) {
+return notionRequest(`/pages/${pageId}`, ‘PATCH’, { properties: props });
+}
+
+// ─────────────────────────────────────────────
+// NOTION PROPERTY HELPERS
+// ─────────────────────────────────────────────
+function nTitle(val) { return { title: [{ text: { content: String(val) } }] }; }
+function nText(val) { return { rich_text: [{ text: { content: String(val || ‘’) } }] }; }
+function nNumber(val) { return { number: Number(val) || 0 }; }
+function nSelect(val) { return { select: { name: String(val) } }; }
+function nDate(val) { return { date: { start: val || new Date().toISOString() } }; }
+function nCheckbox(val) { return { checkbox: !!val }; }
+
+function getTitle(page) { return page.properties?.Titre?.title?.[0]?.plain_text || ‘’; }
+function getText(page, key) { return page.properties?.[key]?.rich_text?.[0]?.plain_text || ‘’; }
+function getNumber(page, key) { return page.properties?.[key]?.number || 0; }
+function getSelect(page, key) { return page.properties?.[key]?.select?.name || ‘’; }
+function getDate(page, key) { return page.properties?.[key]?.date?.start || null; }
+function getCheckbox(page, key) { return page.properties?.[key]?.checkbox || false; }
+
+// ─────────────────────────────────────────────
+// LOCAL CACHE (pour les données non-Notion)
+// ─────────────────────────────────────────────
+const Cache = {
+get: (key, def) => {
+try { const v = localStorage.getItem(‘mei_’ + key); return v ? JSON.parse(v) : def; } catch { return def; }
+},
+set: (key, val) => {
+try { localStorage.setItem(‘mei_’ + key, JSON.stringify(val)); } catch {}
+}
+};
+
+// ─────────────────────────────────────────────
+// LOADING UI
+// ─────────────────────────────────────────────
+function showLoading(containerId) {
+const el = document.getElementById(containerId);
+if (el) el.innerHTML = `<div style="padding:24px;text-align:center;font-family:var(--font-mono);font-size:11px;color:var(--grey-400)">Chargement...</div>`;
+}
+
+function showError(containerId, msg = ‘Erreur de connexion Notion’) {
+const el = document.getElementById(containerId);
+if (el) el.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div>${msg}</div>`;
+}
+
+// XP LEVELS
+const LEVELS = [
+{ level: 1, name: ‘Débutante’, xp: 0 },
+{ level: 2, name: ‘En route’, xp: 100 },
+{ level: 3, name: ‘En mouvement’, xp: 250 },
+{ level: 4, name: ‘Déterminée’, xp: 500 },
+{ level: 5, name: ‘Momentum’, xp: 900 },
+{ level: 6, name: ‘Slay queen’, xp: 1500 },
+{ level: 7, name: ‘Self-made’, xp: 2200 },
+{ level: 8, name: ‘Unstoppable’, xp: 3000 },
+{ level: 9, name: ‘Iconic’, xp: 4000 },
+{ level: 10, name: ‘★ LEGEND ★’, xp: 5500 },
+];
+
+function getLevelInfo(totalXP) {
+let current = LEVELS[0];
+let next = LEVELS[1];
+for (let i = LEVELS.length - 1; i >= 0; i–) {
+if (totalXP >= LEVELS[i].xp) {
+current = LEVELS[i];
+next = LEVELS[i + 1] || null;
+break;
+}
+}
+const xpInLevel = totalXP - current.xp;
+const xpNeeded = next ? next.xp - current.xp : 999;
+const pct = Math.min(100, Math.round((xpInLevel / xpNeeded) * 100));
+return { current, next, xpInLevel, xpNeeded, pct };
+}
+
+// ─────────────────────────────────────────────
+// XP SYSTEM — NOTION
+// ─────────────────────────────────────────────
+async function getXPPage() {
+const rows = await queryDB({ property: ‘Type’, select: { equals: ‘xp_state’ } });
+return rows[0] || null;
+}
+
+async function getTotalXP() {
+const page = await getXPPage();
+if (!page) return 0;
+return getNumber(page, ‘Valeur’);
+}
+
+async function addXP(amount, reason, category = ‘autre’) {
+try {
+// 1. Mise à jour XP total
+const xpPage = await getXPPage();
+const currentXP = xpPage ? getNumber(xpPage, ‘Valeur’) : 0;
+const newXP = currentXP + amount;
+
+```
+if (xpPage) {
+  await updatePage(xpPage.id, { 'Valeur': nNumber(newXP) });
+} else {
+  await createPage({
+    'Titre': nTitle('XP Total'),
+    'Type': nSelect('xp_state'),
+    'Valeur': nNumber(newXP),
+  });
+}
+
+// 2. Log XP
+await createPage({
+  'Titre': nTitle(reason),
+  'Type': nSelect('xp_log'),
+  'Categorie': nText(category),
+  'Valeur': nNumber(amount),
+  'Date': nDate(new Date().toISOString()),
+});
+
+// 3. XP par catégorie
+const catRows = await queryDB({
+  and: [
+    { property: 'Type', select: { equals: 'cat_xp' } },
+    { property: 'Categorie', rich_text: { equals: category } },
+  ]
+});
+if (catRows.length) {
+  const cur = getNumber(catRows[0], 'Valeur');
+  await updatePage(catRows[0].id, { 'Valeur': nNumber(cur + amount) });
+} else {
+  await createPage({
+    'Titre': nTitle(`XP ${category}`),
+    'Type': nSelect('cat_xp'),
+    'Categorie': nText(category),
+    'Valeur': nNumber(amount),
+  });
+}
+
+// 4. Level up check
+const before = getLevelInfo(currentXP);
+const after = getLevelInfo(newXP);
+if (after.current.level > before.current.level) {
+  showToast(`🎉 LEVEL UP ! Niveau ${after.current.level} — ${after.current.name}`);
+} else {
+  showToast(`+${amount} XP — ${reason}`);
+}
+
+await updateXPUI();
+updateStreak();
+```
+
+} catch(e) {
+console.error(‘addXP error’, e);
+showToast(‘⚠️ Erreur connexion Notion’);
+}
+}
+
+async function updateXPUI() {
+const totalXP = await getTotalXP();
+const info = getLevelInfo(totalXP);
+document.getElementById(‘xp-bar-fill’).style.width = info.pct + ‘%’;
+document.getElementById(‘xp-level-label’).textContent = `LVL ${info.current.level} — ${info.current.name.toUpperCase()}`;
+document.getElementById(‘xp-numbers’).textContent = `${info.xpInLevel} / ${info.xpNeeded} XP`;
+document.getElementById(‘dash-xp’).textContent = totalXP;
+document.getElementById(‘dash-level’).textContent = `Niveau ${info.current.level} — ${info.current.name}`;
+document.getElementById(‘prog-level’).textContent = info.current.level;
+document.getElementById(‘prog-level-name’).textContent = info.current.name;
+document.getElementById(‘prog-xp-needed’).textContent = info.next ? (info.xpNeeded - info.xpInLevel) : ‘—’;
+}
+
+function showToast(msg) {
+const t = document.getElementById(‘xp-toast’);
+t.textContent = msg;
+t.classList.add(‘show’);
+setTimeout(() => t.classList.remove(‘show’), 2800);
+}
+
+// ─────────────────────────────────────────────
+// STREAK
+// ─────────────────────────────────────────────
+function updateStreak() {
+const today = new Date().toDateString();
+const streakData = DB.get(‘streak’, { last: null, count: 0 });
+const yesterday = new Date(Date.now() - 86400000).toDateString();
+
+if (streakData.last === today) {
+// Already counted today
+} else if (streakData.last === yesterday) {
+streakData.count++;
+streakData.last = today;
+DB.set(‘streak’, streakData);
+} else if (streakData.last !== today) {
+streakData.count = 1;
+streakData.last = today;
+DB.set(‘streak’, streakData);
+}
+
+document.getElementById(‘streak-count’).textContent = streakData.count;
+}
+
+// ─────────────────────────────────────────────
+// NAVIGATION
+// ─────────────────────────────────────────────
+function navigate(page) {
+document.querySelectorAll(’.page’).forEach(p => p.classList.remove(‘active’));
+document.querySelectorAll(’.nav-item’).forEach(n => n.classList.remove(‘active’));
+document.getElementById(‘page-’ + page).classList.add(‘active’);
+event.currentTarget.classList.add(‘active’);
+
+if (page === ‘dashboard’) renderDashboard();
+if (page === ‘vinted’) renderVinted();
+if (page === ‘apprentissage’) renderApprentissage();
+if (page === ‘objectifs’) renderObjectifs();
+if (page === ‘humeur’) renderHumeur();
+if (page === ‘routine’) renderRoutine();
+if (page === ‘progression’) renderProgression();
+if (page === ‘journal’) renderJournal();
+}
+
+// ─────────────────────────────────────────────
+// MODALS
+// ─────────────────────────────────────────────
+function openModal(id) {
+document.getElementById(id).classList.add(‘open’);
+}
+
+function closeModal(id) {
+document.getElementById(id).classList.remove(‘open’);
+}
+
+document.querySelectorAll(’.modal-overlay’).forEach(o => {
+o.addEventListener(‘click’, e => { if (e.target === o) o.classList.remove(‘open’); });
+});
+
+// ─────────────────────────────────────────────
+// TASKS — NOTION
+// ─────────────────────────────────────────────
+function openTaskModal(cat) {
+document.getElementById(‘task-cat-input’).value = cat;
+openModal(‘modal-task’);
+}
+
+async function addTask() {
+const title = document.getElementById(‘task-title-input’).value.trim();
+const cat = document.getElementById(‘task-cat-input’).value;
+const xp = parseInt(document.getElementById(‘task-xp-input’).value);
+if (!title) return;
+try {
+await createPage({
+‘Titre’: nTitle(title),
+‘Type’: nSelect(‘task’),
+‘Categorie’: nText(cat),
+‘Valeur’: nNumber(xp),
+‘Done’: nCheckbox(false),
+‘Date’: nDate(new Date().toISOString()),
+});
+document.getElementById(‘task-title-input’).value = ‘’;
+closeModal(‘modal-task’);
+await renderDashboard();
+await renderApprentissage();
+} catch(e) { showToast(‘⚠️ Erreur Notion’); }
+}
+
+async function toggleTask(pageId, currentDone, xp, title, cat) {
+try {
+await updatePage(pageId, {
+‘Done’: nCheckbox(!currentDone),
+…(currentDone ? {} : { ‘DateDone’: nDate(new Date().toISOString()) })
+});
+if (!currentDone) await addXP(xp, title, cat);
+await renderDashboard();
+await renderApprentissage();
+await updateDashStats();
+} catch(e) { showToast(‘⚠️ Erreur Notion’); }
+}
+
+async function deleteTask(pageId) {
+try {
+await notionRequest(`/pages/${pageId}`, ‘PATCH’, { archived: true });
+await renderDashboard();
+await renderApprentissage();
+} catch(e) { showToast(‘⚠️ Erreur Notion’); }
+}
+
+async function renderTaskList(containerId, filterCat = null) {
+showLoading(containerId);
+try {
+const today = new Date().toISOString().split(‘T’)[0];
+const filters = [
+{ property: ‘Type’, select: { equals: ‘task’ } },
+{ property: ‘Date’, date: { on_or_after: today } },
+{ property: ‘Date’, date: { on_or_before: today + ‘T23:59:59Z’ } },
+];
+if (filterCat) filters.push({ property: ‘Categorie’, rich_text: { equals: filterCat } });
+const rows = await queryDB({ and: filters });
+const el = document.getElementById(containerId);
+if (!rows.length) {
+el.innerHTML = `<div class="empty-state"><div class="empty-icon">◈</div>Aucune tâche aujourd'hui<br>Ajoute-en une !</div>`;
+return;
+}
+el.innerHTML = rows.map(r => {
+const title = getTitle(r);
+const cat = getText(r, ‘Categorie’);
+const xp = getNumber(r, ‘Valeur’);
+const done = getCheckbox(r, ‘Done’);
+return `<div class="task-item ${done ? 'done' : ''}"> <div class="task-check" onclick="toggleTask('${r.id}', ${done}, ${xp}, '${title.replace(/'/g,"\\'")}', '${cat}')"> ${done ? '✓' : ''} </div> <div class="task-content"> <div class="task-title">${title}</div> <div class="task-meta">${catLabel(cat)}</div> </div> <div class="task-xp">+${xp} XP</div> <button class="btn btn-danger" onclick="deleteTask('${r.id}')">✕</button> </div>`;
+}).join(’’);
+} catch(e) { showError(containerId, ‘Erreur chargement tâches’); }
+}
+
+function catLabel(cat) {
+const map = { vinted: ‘💰 Vinted’, apprentissage: ‘📚 Apprentissage’, objectifs: ‘🎯 Objectifs’, routine: ‘⏰ Routine’, autre: ‘◈ Autre’ };
+return map[cat] || cat;
+}
+
+// ─────────────────────────────────────────────
+// DASHBOARD
+// ─────────────────────────────────────────────
+function renderCheckin() {
+const today = new Date().toDateString();
+const checkins = DB.get(‘checkins’, {});
+const done = !!checkins[today];
+const el = document.getElementById(‘checkin-block’);
+
+const timeStr = done ? new Date(checkins[today]).toLocaleTimeString(‘fr-FR’, {hour:‘2-digit’, minute:‘2-digit’}) : null;
+
+el.innerHTML = `<div class="checkin-wrap ${done ? 'done' : ''}"> <div class="checkin-pulse"></div> <div class="checkin-info"> <div class="checkin-title">${done ? '✓ Tu étais là aujourd\'hui' : 'Tu es là ?'}</div> <div class="checkin-sub">${done ?`Check-in à ${timeStr} · +20 XP gagné`: 'Clique pour marquer ta présence du jour'}</div> </div> ${done ?`<button class="btn-checkin done">Présente ✓</button>`:`<button class="btn-checkin" onclick="doCheckin()">J’étais là ✦</button>`} </div>`;
+}
+
+function doCheckin() {
+const today = new Date().toDateString();
+const checkins = DB.get(‘checkins’, {});
+if (checkins[today]) return;
+checkins[today] = new Date().toISOString();
+DB.set(‘checkins’, checkins);
+addXP(20, ‘Check-in quotidien’, ‘routine’);
+updateStreak();
+renderCheckin();
+}
+
+// ─────────────────────────────────────────────
+// DASHBOARD
+// ─────────────────────────────────────────────
+function renderDashboard() {
+renderCheckin();
+renderTaskList(‘dashboard-tasks’);
+updateDashStats();
+renderWeekHeatmap();
+}
+
+function updateDashStats() {
+const tasks = DB.get(‘tasks’, []);
+const today = new Date().toDateString();
+const todayTasks = tasks.filter(t => t.date === today);
+const done = todayTasks.filter(t => t.done).length;
+document.getElementById(‘dash-tasks’).textContent = `${done}/${todayTasks.length}`;
+
+const ventes = DB.get(‘ventes’, []);
+const thisMonth = new Date().getMonth();
+const monthVentes = ventes.filter(v => new Date(v.date).getMonth() === thisMonth);
+const monthProfit = monthVentes.reduce((s, v) => s + (v.prix - v.achat), 0);
+document.getElementById(‘dash-revenus’).textContent = monthProfit.toFixed(0) + ‘€’;
+}
+
+function renderWeekHeatmap() {
+const log = DB.get(‘xp_log’, []);
+const el = document.getElementById(‘week-heatmap’);
+const days = [‘Lun’, ‘Mar’, ‘Mer’, ‘Jeu’, ‘Ven’, ‘Sam’, ‘Dim’];
+const today = new Date();
+
+el.innerHTML = Array.from({length: 7}, (_, i) => {
+const d = new Date(today);
+d.setDate(today.getDate() - (6 - i));
+const ds = d.toDateString();
+const hasData = log.some(l => new Date(l.date).toDateString() === ds);
+const isToday = ds === today.toDateString();
+const cls = isToday ? ‘today’ : hasData ? ‘has-data’ : ‘’;
+return `<div class="week-day ${cls}">${days[(d.getDay() + 6) % 7]}</div>`;
+}).join(’’);
+}
+
+// ─────────────────────────────────────────────
+// VINTED
+// ─────────────────────────────────────────────
+function addVente() {
+const article = document.getElementById(‘vente-article’).value.trim();
+const achat = parseFloat(document.getElementById(‘vente-achat’).value) || 0;
+const prix = parseFloat(document.getElementById(‘vente-prix’).value) || 0;
+const note = document.getElementById(‘vente-note’).value.trim();
+if (!article) return;
+
+const ventes = DB.get(‘ventes’, []);
+ventes.unshift({ id: Date.now(), article, achat, prix, note, date: new Date().toISOString() });
+DB.set(‘ventes’, ventes);
+
+[‘vente-article’, ‘vente-achat’, ‘vente-prix’, ‘vente-note’].forEach(id => document.getElementById(id).value = ‘’);
+closeModal(‘modal-vente’);
+addXP(15, `Vente : ${article}`, ‘vinted’);
+renderVinted();
+}
+
+function deleteVente(id) {
+DB.set(‘ventes’, DB.get(‘ventes’, []).filter(v => v.id !== id));
+renderVinted();
+}
+
+function renderVinted() {
+const ventes = DB.get(‘ventes’, []);
+const thisMonth = new Date().getMonth();
+const monthV = ventes.filter(v => new Date(v.date).getMonth() === thisMonth);
+const monthProfit = monthV.reduce((s, v) => s + (v.prix - v.achat), 0);
+const totalProfit = ventes.reduce((s, v) => s + (v.prix - v.achat), 0);
+
+document.getElementById(‘v-profit’).textContent = monthProfit.toFixed(2) + ‘€’;
+document.getElementById(‘v-profit-sub’).textContent = `${monthV.length} vente${monthV.length > 1 ? 's' : ''} ce mois`;
+document.getElementById(‘v-total’).textContent = totalProfit.toFixed(2) + ‘€’;
+
+const el = document.getElementById(‘ventes-list’);
+if (!ventes.length) {
+el.innerHTML = `<div class="empty-state"><div class="empty-icon">💰</div>Aucune vente enregistrée<br>Lance-toi !</div>`;
+return;
+}
+
+el.innerHTML = ventes.map(v => {
+const profit = v.prix - v.achat;
+const d = new Date(v.date);
+return `<div class="income-item"> <div class="income-left"> <div class="income-name">${v.article}</div> <div class="income-date">${d.toLocaleDateString('fr-FR')} ${v.note ? '· ' + v.note : ''}</div> <div class="income-profit">Acheté ${v.achat}€ → Vendu ${v.prix}€ = <strong>+${profit.toFixed(2)}€</strong></div> </div> <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px"> <div class="income-amount">${v.prix}€</div> <button class="btn btn-danger" onclick="deleteVente(${v.id})">Supprimer</button> </div> </div>`;
+}).join(’’);
+}
+
+// ─────────────────────────────────────────────
+// APPRENTISSAGE
+// ─────────────────────────────────────────────
+function renderApprentissage() {
+const tasks = DB.get(‘tasks’, []);
+const appTasks = tasks.filter(t => t.cat === ‘apprentissage’);
+const today = new Date().toDateString();
+const todayA = appTasks.filter(t => t.date === today);
+const thisMonth = new Date().getMonth();
+const monthA = appTasks.filter(t => new Date(t.created).getMonth() === thisMonth);
+
+document.getElementById(‘a-sessions’).textContent = monthA.filter(t => t.done).length;
+document.getElementById(‘a-heures’).textContent = (monthA.filter(t => t.done).length * 1) + ‘h’;
+
+renderTaskList(‘apprentissage-tasks’, ‘apprentissage’);
+}
+
+// ─────────────────────────────────────────────
+// OBJECTIFS
+// ─────────────────────────────────────────────
+function addObjectif() {
+const title = document.getElementById(‘obj-title’).value.trim();
+const desc = document.getElementById(‘obj-desc’).value.trim();
+const deadline = document.getElementById(‘obj-deadline’).value;
+const cat = document.getElementById(‘obj-cat’).value;
+if (!title) return;
+
+const objs = DB.get(‘objectifs’, []);
+objs.unshift({ id: Date.now(), title, desc, deadline, cat, done: false, created: new Date().toISOString() });
+DB.set(‘objectifs’, objs);
+[‘obj-title’, ‘obj-desc’, ‘obj-deadline’].forEach(id => document.getElementById(id).value = ‘’);
+closeModal(‘modal-obj’);
+addXP(10, `Objectif posé : ${title}`, ‘objectifs’);
+renderObjectifs();
+}
+
+function toggleObjectif(id) {
+const objs = DB.get(‘objectifs’, []);
+const obj = objs.find(o => o.id === id);
+if (!obj) return;
+obj.done = !obj.done;
+if (obj.done) addXP(50, `Objectif atteint : ${obj.title}`, ‘objectifs’);
+DB.set(‘objectifs’, objs);
+renderObjectifs();
+}
+
+function deleteObjectif(id) {
+DB.set(‘objectifs’, DB.get(‘objectifs’, []).filter(o => o.id !== id));
+renderObjectifs();
+}
+
+function renderObjectifs() {
+const objs = DB.get(‘objectifs’, []);
+const el = document.getElementById(‘objectifs-list’);
+if (!objs.length) {
+el.innerHTML = `<div class="empty-state"><div class="empty-icon">🎯</div>Aucun objectif posé<br>Définis ta vision !</div>`;
+return;
+}
+el.innerHTML = objs.map(o => {
+const daysLeft = o.deadline ? Math.ceil((new Date(o.deadline) - new Date()) / 86400000) : null;
+return `<div class="obj-card" style="${o.done ? 'opacity:0.5' : ''}"> <div class="obj-header"> <div> <div class="obj-title" style="${o.done ? 'text-decoration:line-through' : ''}">${o.title}</div> <div class="obj-deadline"> ${o.deadline ?`Deadline : ${new Date(o.deadline).toLocaleDateString(‘fr-FR’)} ${daysLeft !== null && daysLeft >= 0 ? `(${daysLeft}j restants)` : ‘(passée)’}`: 'Pas de deadline'} </div> </div> <span class="cat-badge">${catLabel(o.cat)}</span> </div> ${o.desc ?`<div class="obj-desc">${o.desc}</div>`: ''} <div style="display:flex;gap:8px;margin-top:12px"> <button class="btn btn-ghost" style="font-size:11px;padding:6px 12px" onclick="toggleObjectif(${o.id})">${o.done ? 'Réouvrir' : '✓ Marquer atteint (+50 XP)'}</button> <button class="btn btn-danger" onclick="deleteObjectif(${o.id})">Supprimer</button> </div> </div>`;
+}).join(’’);
+}
+
+// ─────────────────────────────────────────────
+// HUMEUR
+// ─────────────────────────────────────────────
+let selectedMood = null;
+
+function selectMood(score, btn) {
+document.querySelectorAll(’.mood-btn’).forEach(b => b.classList.remove(‘selected’));
+btn.classList.add(‘selected’);
+selectedMood = score;
+}
+
+function saveMood() {
+if (!selectedMood) { showToast(‘Sélectionne une humeur !’); return; }
+const note = document.getElementById(‘mood-note’).value.trim();
+const moods = DB.get(‘moods’, []);
+moods.unshift({ id: Date.now(), score: selectedMood, note, date: new Date().toISOString() });
+DB.set(‘moods’, moods);
+document.getElementById(‘mood-note’).value = ‘’;
+document.querySelectorAll(’.mood-btn’).forEach(b => b.classList.remove(‘selected’));
+selectedMood = null;
+addXP(5, ‘Check-in humeur’, ‘humeur’);
+renderHumeur();
+}
+
+function renderHumeur() {
+const moods = DB.get(‘moods’, []);
+const el = document.getElementById(‘mood-history’);
+const moodEmojis = { 1: ‘😩’, 2: ‘😔’, 3: ‘😐’, 4: ‘🙂’, 5: ‘✨’ };
+const moodNames = { 1: ‘Crash’, 2: ‘Pas top’, 3: ‘Moyen’, 4: ‘Bien’, 5: ‘On slay’ };
+
+if (!moods.length) {
+el.innerHTML = `<div class="empty-state"><div class="empty-icon">🧠</div>Pas encore de check-ins</div>`;
+return;
+}
+
+el.innerHTML = moods.slice(0, 10).map(m => `<div class="income-item"> <div class="income-left"> <div class="income-name">${moodEmojis[m.score]} ${moodNames[m.score]}</div> <div class="income-date">${new Date(m.date).toLocaleDateString('fr-FR')} à ${new Date(m.date).toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'})}</div> ${m.note ?`<div class="income-profit">${m.note}</div>`: ''} </div> </div>`).join(’’);
+}
+
+// ─────────────────────────────────────────────
+// ROUTINE
+// ─────────────────────────────────────────────
+const DEFAULT_HABITS = [
+{ id: ‘h1’, name: ‘Boire 1.5L eau’, icon: ‘💧’, xp: 5 },
+{ id: ‘h2’, name: ‘Lire 20 min’, icon: ‘📖’, xp: 5 },
+{ id: ‘h3’, name: ‘Pas de réseaux avant 10h’, icon: ‘📵’, xp: 10 },
+{ id: ‘h4’, name: ‘Code / apprentissage’, icon: ‘💻’, xp: 10 },
+];
+
+function getHabits() {
+return DB.get(‘habits’, DEFAULT_HABITS);
+}
+
+function addHabit() {
+const name = document.getElementById(‘habit-name’).value.trim();
+const icon = document.getElementById(‘habit-icon’).value.trim() || ‘✦’;
+const xp = parseInt(document.getElementById(‘habit-xp’).value);
+if (!name) return;
+const habits = getHabits();
+habits.push({ id: ‘h’ + Date.now(), name, icon, xp });
+DB.set(‘habits’, habits);
+document.getElementById(‘habit-name’).value = ‘’;
+document.getElementById(‘habit-icon’).value = ‘’;
+closeModal(‘modal-habit’);
+renderRoutine();
+}
+
+function deleteHabit(id) {
+DB.set(‘habits’, getHabits().filter(h => h.id !== id));
+renderRoutine();
+}
+
+function toggleHabit(id) {
+const today = new Date().toDateString();
+const done = DB.get(‘habits_done’, {});
+if (!done[today]) done[today] = {};
+const habits = getHabits();
+const habit = habits.find(h => h.id === id);
+if (!habit) return;
+
+if (done[today][id]) {
+delete done[today][id];
+} else {
+done[today][id] = true;
+addXP(habit.xp, `Habitude : ${habit.name}`, ‘routine’);
+}
+DB.set(‘habits_done’, done);
+renderRoutine();
+}
+
+function renderRoutine() {
+const habits = getHabits();
+const today = new Date().toDateString();
+const done = DB.get(‘habits_done’, {})[today] || {};
+
+const grid = document.getElementById(‘routine-grid’);
+grid.innerHTML = habits.map(h => `<div class="routine-item ${done[h.id] ? 'checked' : ''}" onclick="toggleHabit('${h.id}')"> <div class="routine-icon">${h.icon}</div> <div class="routine-label">${h.name}</div> <div class="routine-xp">+${h.xp} XP</div> </div>`).join(’’);
+
+const manage = document.getElementById(‘habits-manage’);
+manage.innerHTML = habits.map(h => `<div class="income-item"> <div class="income-name">${h.icon} ${h.name}</div> <button class="btn btn-danger" onclick="deleteHabit('${h.id}')">Supprimer</button> </div>`).join(’’);
+}
+
+// ─────────────────────────────────────────────
+// PROGRESSION
+// ─────────────────────────────────────────────
+function renderProgression() {
+const catXP = DB.get(‘cat_xp’, {});
+const cats = [
+{ key: ‘vinted’, label: ‘💰 Vinted / Income’ },
+{ key: ‘apprentissage’, label: ‘📚 Apprentissage’ },
+{ key: ‘objectifs’, label: ‘🎯 Objectifs’ },
+{ key: ‘humeur’, label: ‘🧠 Humeur’ },
+{ key: ‘routine’, label: ‘⏰ Routine’ },
+];
+const maxXP = Math.max(…cats.map(c => catXP[c.key] || 0), 1);
+
+document.getElementById(‘cat-progress’).innerHTML = cats.map(c => {
+const xp = catXP[c.key] || 0;
+const pct = Math.round((xp / maxXP) * 100);
+return `<div class="progress-wrap"> <div class="progress-label"><span>${c.label}</span><span>${xp} XP</span></div> <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div> </div>`;
+}).join(’’);
+
+document.getElementById(‘levels-list’).innerHTML = LEVELS.map(l => {
+const totalXP = DB.get(‘xp’, 0);
+const reached = totalXP >= l.xp;
+return `<div class="income-item" style="${reached ? '' : 'opacity:0.4'}"> <div class="income-left"> <div class="income-name">${reached ? '✓' : '○'} Niveau ${l.level} — ${l.name}</div> <div class="income-date">${l.xp} XP requis</div> </div> ${reached ? '<span style="font-family:var(--font-mono);font-size:10px;color:var(--grey-400)">DÉBLOQUÉ</span>' : ''} </div>`;
+}).join(’’);
+}
+
+// ─────────────────────────────────────────────
+// JOURNAL
+// ─────────────────────────────────────────────
+function renderJournal() {
+const log = DB.get(‘xp_log’, []);
+const body = document.getElementById(‘journal-body’);
+if (!log.length) {
+body.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--grey-400);padding:32px;font-family:var(--font-mono);font-size:11px">Aucune action enregistrée</td></tr>`;
+return;
+}
+body.innerHTML = log.map(l => `<tr> <td style="font-family:var(--font-mono);color:var(--grey-400)">${new Date(l.date).toLocaleDateString('fr-FR')}</td> <td>${l.reason}</td> <td><span class="cat-badge">${catLabel(l.category)}</span></td> <td style="font-family:var(--font-mono);font-weight:500">+${l.amount}</td> </tr>`).join(’’);
+}
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+function init() {
+const now = new Date();
+const opts = { weekday: ‘long’, day: ‘numeric’, month: ‘long’, year: ‘numeric’ };
+const dateStr = now.toLocaleDateString(‘fr-FR’, opts);
+document.getElementById(‘header-date’).textContent = dateStr;
+document.getElementById(‘dashboard-date-sub’).textContent = dateStr.toUpperCase();
+
+updateXPUI();
+updateStreak();
+renderDashboard();
+}
+
+init();
+</script>
+
+</body>
+</html>
