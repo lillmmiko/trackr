@@ -1,4 +1,4 @@
-const NOTION_DB_ID = ‘34d17c9946d980d0bebbdab878146c18’;
+const NOTION_DB_ID = ‘34d17c9946d9804cbe31000c0c0eb98e’;
 
 // ── Requête via la serverless function ──
 async function notionReq(path, method = ‘GET’, body = null) {
