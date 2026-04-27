@@ -1,6 +1,6 @@
 const NOTION_DB_ID = ‘34d17c9946d9804cbe31000c0c0eb98e’;
 
-// ── Requête via la serverless function ──
+
 async function notionReq(path, method = ‘GET’, body = null) {
 const url  = `/api/notion?path=${encodeURIComponent(path)}`;
 const opts = {
@@ -13,7 +13,7 @@ if (!res.ok) throw new Error(`Notion ${res.status}`);
 return res.json();
 }
 
-// ── Query / Create / Update / Archive ──
+
 async function queryDB(filter = null) {
 const body = { page_size: 100 };
 if (filter) body.filter = filter;
@@ -36,7 +36,7 @@ async function archiveRow(id) {
 return notionReq(`pages/${id}`, ‘PATCH’, { archived: true });
 }
 
-// ── Setters (écriture) ──
+
 const nTitle  = v => ({ title:     [{ text: { content: String(v) } }] });
 const nText   = v => ({ rich_text: [{ text: { content: String(v || ‘’) } }] });
 const nNumber = v => ({ number:  Number(v) || 0 });
@@ -44,7 +44,7 @@ const nSelect = v => ({ select:  { name: String(v) } });
 const nDate   = v => ({ date:    { start: v || new Date().toISOString() } });
 const nCheck  = v => ({ checkbox: !!v });
 
-// ── Getters (lecture) ──
+
 const gTitle  = r       => r.properties?.Titre?.title?.[0]?.plain_text || ‘’;
 const gText   = (r, k) => r.properties?.[k]?.rich_text?.[0]?.plain_text || ‘’;
 const gNumber = (r, k) => r.properties?.[k]?.number || 0;
