@@ -10,7 +10,7 @@ if (req.method === ‘OPTIONS’) {
 return res.status(200).end();
 }
 
-const NOTION_TOKEN = ‘REMPLACE_PAR_TON_TOKEN’;
+const NOTION_TOKEN = ‘ntn_F63853872255y18zYJIRf3T3fLxg3rBDh22AKXa4RTd8YI’;
 const { path } = req.query;
 
 if (!path) {
