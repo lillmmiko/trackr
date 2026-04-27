@@ -19,6 +19,9 @@ if (!path) {
 return res.status(400).json({ error: 'Missing path' });
 }
 
+console.log('PATH:' , path);
+  console.log('TOKEN starts with:' , NOTION_TOKEN.subsrting(0, 10));
+  
 try {
 const notionRes = await fetch(`https://api.notion.com/v1/${path}`, {
 method: req.method,
