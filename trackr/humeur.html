@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MEI — Humeur</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=Instrument+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app" id="app">
+  <main class="page-enter">
+    <div class="page-title">Humeur & Bien-être</div>
+    <div class="page-sub">COMMENT TU TE SENS AUJOURD'HUI ?</div>
+
+    <div class="section-header"><div class="section-title">Check-in du jour</div></div>
+
+    <div class="mood-grid">
+      <button class="mood-btn" onclick="selectMood(1,this)">😩<span>Crash</span></button>
+      <button class="mood-btn" onclick="selectMood(2,this)">😔<span>Pas top</span></button>
+      <button class="mood-btn" onclick="selectMood(3,this)">😐<span>Moyen</span></button>
+      <button class="mood-btn" onclick="selectMood(4,this)">🙂<span>Bien</span></button>
+      <button class="mood-btn" onclick="selectMood(5,this)">✨<span>On slay</span></button>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Une note ? (optionnel)</label>
+      <textarea class="form-textarea" id="mood-note" placeholder="ce que t'as sur le cœur…"></textarea>
+    </div>
+    <button class="btn btn-primary" onclick="saveMood()">Enregistrer le check-in (+5 XP)</button>
+
+    <hr>
+
+    <div class="section-header"><div class="section-title">Historique humeur</div></div>
+    <div id="mood-history"></div>
+  </main>
+</div>
+
+<div class="xp-toast" id="xp-toast"></div>
+<script src="js/notion.js"></script>
+<script src="js/xp.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/pages/humeur.js"></script>
+</body>
+</html>

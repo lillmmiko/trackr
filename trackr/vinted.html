@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MEI — Vinted</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=Instrument+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app" id="app">
+  <main class="page-enter">
+    <div class="page-title">Vinted / Side Income</div>
+    <div class="page-sub">TRACK TES SALES — CHAQUE EURO COMPTE</div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-label">Profit ce mois</div>
+        <div class="card-value" id="v-profit">—</div>
+        <div class="card-sub"  id="v-profit-sub">chargement…</div>
+      </div>
+      <div class="card card-inverted">
+        <div class="card-label">Total all-time</div>
+        <div class="card-value" id="v-total">—</div>
+        <div class="card-sub">depuis le début</div>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <div class="section-title">Ventes</div>
+      <button class="btn btn-primary" onclick="openModal('modal-vente')">+ Vente</button>
+    </div>
+    <div id="ventes-list"></div>
+  </main>
+</div>
+
+<!-- MODAL — Nouvelle vente -->
+<div class="modal-overlay" id="modal-vente">
+  <div class="modal">
+    <div class="modal-title">Nouvelle vente</div>
+    <div class="modal-sub">ENREGISTRE TA SALE 💰</div>
+    <div class="form-group">
+      <label class="form-label">Article</label>
+      <input class="form-input" id="vente-article" placeholder="ex: Pull Zara beige">
+    </div>
+    <div class="grid-2" style="gap:12px;margin-bottom:16px">
+      <div>
+        <label class="form-label">Prix d'achat (€)</label>
+        <input class="form-input" id="vente-achat" type="number" placeholder="0" min="0">
+      </div>
+      <div>
+        <label class="form-label">Prix de vente (€)</label>
+        <input class="form-input" id="vente-prix" type="number" placeholder="0" min="0">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes</label>
+      <input class="form-input" id="vente-note" placeholder="état, marque, remarques…">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-vente')">Annuler</button>
+      <button class="btn btn-primary" onclick="addVente()">Enregistrer (+15 XP)</button>
+    </div>
+  </div>
+</div>
+
+<div class="xp-toast" id="xp-toast"></div>
+
+<script src="js/notion.js"></script>
+<script src="js/xp.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/pages/vinted.js"></script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MEI — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=Instrument+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app" id="app">
+  <!-- header + sidebar injectés par layout.js -->
+
+  <main class="page-enter">
+    <div class="page-title">Bonjour ✦</div>
+    <div class="page-sub" id="dashboard-date-sub"></div>
+
+    <div class="grid-3">
+      <div class="card card-inverted">
+        <div class="card-label">XP Total</div>
+        <div class="card-value" id="dash-xp">—</div>
+        <div class="card-sub"  id="dash-level">Chargement…</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Revenus ce mois</div>
+        <div class="card-value" id="dash-revenus">—</div>
+        <div class="card-sub">Vinted + Side</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Tâches aujourd'hui</div>
+        <div class="card-value" id="dash-tasks">—</div>
+        <div class="card-sub">complétées</div>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <div class="section-title">Activité — 7 derniers jours</div>
+    </div>
+    <div class="week-row" id="week-heatmap"></div>
+
+    <hr>
+
+    <!-- CHECKIN -->
+    <div id="checkin-block" style="margin-bottom:24px"></div>
+
+    <!-- TÂCHES DU JOUR -->
+    <div class="section-header">
+      <div class="section-title">Tâches du jour</div>
+      <button class="btn btn-primary" onclick="openModal('modal-task')">+ Ajouter</button>
+    </div>
+    <div class="task-list" id="dashboard-tasks"></div>
+  </main>
+</div>
+
+<!-- MODAL — Nouvelle tâche -->
+<div class="modal-overlay" id="modal-task">
+  <div class="modal">
+    <div class="modal-title">Nouvelle tâche</div>
+    <div class="modal-sub">AJOUTE UNE TÂCHE POUR AUJOURD'HUI</div>
+    <div class="form-group">
+      <label class="form-label">Titre</label>
+      <input class="form-input" id="task-title-input" placeholder="ex: Lister 3 pièces sur Vinted">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Catégorie</label>
+      <select class="form-select" id="task-cat-input">
+        <option value="vinted">💰 Vinted / Income</option>
+        <option value="apprentissage">📚 Apprentissage</option>
+        <option value="objectifs">🎯 Objectifs</option>
+        <option value="routine">⏰ Routine</option>
+        <option value="autre">◈ Autre</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">XP récompense</label>
+      <select class="form-select" id="task-xp-input">
+        <option value="5">5 XP — Petite tâche</option>
+        <option value="10" selected>10 XP — Tâche normale</option>
+        <option value="20">20 XP — Tâche importante</option>
+        <option value="30">30 XP — Big move</option>
+        <option value="50">50 XP — Tâche majeure</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-task')">Annuler</button>
+      <button class="btn btn-primary" onclick="addTask()">Créer la tâche</button>
+    </div>
+  </div>
+</div>
+
+<div class="xp-toast" id="xp-toast"></div>
+
+<script src="js/notion.js"></script>
+<script src="js/xp.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/pages/dashboard.js"></script>
+</body>
+</html>

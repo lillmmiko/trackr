@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MEI — Objectifs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=Instrument+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app" id="app">
+  <main class="page-enter">
+    <div class="page-title">Objectifs</div>
+    <div class="page-sub">TA VISION — PAS À PAS</div>
+    <div class="section-header">
+      <div class="section-title">Mes objectifs</div>
+      <button class="btn btn-primary" onclick="openModal('modal-obj')">+ Objectif</button>
+    </div>
+    <div id="objectifs-list"></div>
+  </main>
+</div>
+
+<div class="modal-overlay" id="modal-obj">
+  <div class="modal">
+    <div class="modal-title">Nouvel objectif</div>
+    <div class="modal-sub">POSE TON INTENTION</div>
+    <div class="form-group">
+      <label class="form-label">Titre</label>
+      <input class="form-input" id="obj-title" placeholder="ex: Gagner 500€ sur Vinted en juin">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <textarea class="form-textarea" id="obj-desc" placeholder="Pourquoi cet objectif compte pour toi…"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Date limite</label>
+      <input class="form-input" id="obj-deadline" type="date">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Catégorie</label>
+      <select class="form-select" id="obj-cat">
+        <option value="vinted">💰 Vinted / Income</option>
+        <option value="apprentissage">📚 Apprentissage</option>
+        <option value="objectifs">🎯 Perso</option>
+        <option value="autre">◈ Autre</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-obj')">Annuler</button>
+      <button class="btn btn-primary" onclick="addObjectif()">Ajouter (+10 XP)</button>
+    </div>
+  </div>
+</div>
+
+<div class="xp-toast" id="xp-toast"></div>
+<script src="js/notion.js"></script>
+<script src="js/xp.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/pages/objectifs.js"></script>
+</body>
+</html>

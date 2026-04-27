@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MEI — Journal XP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=Instrument+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app" id="app">
+  <main class="page-enter">
+    <div class="page-title">Journal XP</div>
+    <div class="page-sub">TON HISTORIQUE COMPLET</div>
+
+    <table class="log-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Action</th>
+          <th>Catégorie</th>
+          <th>XP</th>
+        </tr>
+      </thead>
+      <tbody id="journal-body">
+        <tr><td colspan="4" style="text-align:center;padding:32px;font-family:var(--font-mono);font-size:11px;color:var(--grey-400)">Chargement…</td></tr>
+      </tbody>
+    </table>
+  </main>
+</div>
+
+<div class="xp-toast" id="xp-toast"></div>
+<script src="js/notion.js"></script>
+<script src="js/xp.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/pages/journal.js"></script>
+</body>
+</html>
