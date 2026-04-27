@@ -4,7 +4,7 @@
 // ─────────────────────────────────────────────
 
 const NOTION_TOKEN = 'ntn_b63853872259qxDtdSvfI1FyZ0oyjVV81NuOViwokSd9t0';
-const NOTION_DB_ID = '34d17c9946d980d0bebbdab878146c18';
+const NOTION_DB_ID = '34d17c9946d9804cbe31000c0c0eb98e';
 const NOTION_API   = 'https://api.notion.com/v1';
 const PROXY        = 'https://corsproxy.io/?';
 
