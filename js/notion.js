@@ -6,7 +6,7 @@
 const NOTION_TOKEN = 'ntn_F63853872255y18zYJIRf3T3fLxg3rBDh22AKXa4RTd8YI';
 const NOTION_DB_ID = '34d17c9946d9804cbe31000c0c0eb98e&source';
 const NOTION_API   = 'https://api.notion.com/v1';
-const PROXY        = 'https://corsproxy.io/?';
+const PROXY        = 'https://api.allorigins.win/raw?url=';
 
 // ── Requête générique ──
 async function notionReq(path, method = 'GET', body = null) {
