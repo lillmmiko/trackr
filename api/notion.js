@@ -1,42 +1,56 @@
 // api/notion.js — Vercel Serverless Function
-// Fait le pont entre le front et l’API Notion sans problème de CORS
+const https = require(‘https’);
 
-export default async function handler(req, res) {
-// Autorise les requêtes depuis ton site
-res.setHeader('Access-Control-Allow-Origin', '*');
-res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
-res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+module.exports = async function handler(req, res) {
+res.setHeader(‘Access-Control-Allow-Origin’, ‘*’);
+res.setHeader(‘Access-Control-Allow-Methods’, ‘GET, POST, PATCH, DELETE, OPTIONS’);
+res.setHeader(‘Access-Control-Allow-Headers’, ‘Content-Type, Authorization’);
 
-// Réponse aux preflight OPTIONS
-if (req.method === 'OPTIONS') {
+if (req.method === ‘OPTIONS’) {
 return res.status(200).end();
 }
 
-const NOTION_TOKEN = 'ntn_F63853872255y18zYJIRf3T3fLxg3rBDh22AKXa4RTd8YI';
+const NOTION_TOKEN = ‘REMPLACE_PAR_TON_TOKEN’;
 const { path } = req.query;
 
 if (!path) {
-return res.status(400).json({ error: 'Missing path' });
+return res.status(400).json({ error: ‘Missing path’ });
 }
 
-console.log('PATH:' , path);
-  console.log('TOKEN starts with:' , NOTION_TOKEN.subsrting(0, 10));
-  
-try {
-const notionRes = await fetch(`https://api.notion.com/v1/${path}`, {
+const body = req.method !== ‘GET’ ? JSON.stringify(req.body) : null;
+
+const options = {
+hostname: ‘api.notion.com’,
+path: `/v1/${path}`,
 method: req.method,
 headers: {
-'Authorization': `Bearer ${NOTION_TOKEN}`,
-'Notion-Version': '2022-06-28',
-'Content-Type': 'application/json',
+‘Authorization’: `Bearer ${NOTION_TOKEN}`,
+‘Notion-Version’: ‘2022-06-28’,
+‘Content-Type’: ‘application/json’,
+…(body ? { ‘Content-Length’: Buffer.byteLength(body) } : {}),
 },
-body: req.method !== 'GET' ? JSON.stringify(req.body) : undefined,
+};
+
+return new Promise((resolve) => {
+const notionReq = https.request(options, (notionRes) => {
+let data = ‘’;
+notionRes.on(‘data’, chunk => { data += chunk; });
+notionRes.on(‘end’, () => {
+try {
+res.status(notionRes.statusCode).json(JSON.parse(data));
+} catch(e) {
+res.status(500).json({ error: ‘Parse error’, raw: data });
+}
+resolve();
+});
 });
 
-const data = await notionRes.json();
-return res.status(notionRes.status).json(data);
+notionReq.on('error', (e) => {
+  res.status(500).json({ error: e.message });
+  resolve();
+});
 
-} catch (e) {
-return res.status(500).json({ error: e.message });
-}
-}
+if (body) notionReq.write(body);
+notionReq.end();
+});
+};
