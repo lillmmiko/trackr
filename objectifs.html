@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MEI — Objectifs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=Instrument+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="header-left">
+      <div class="logo">MEI.</div>
+      <div class="header-date" id="header-date"></div>
+    </div>
+    <div class="xp-widget">
+      <div class="xp-level-label" id="xp-level-label">LVL 1 — DÉBUTANTE</div>
+      <div class="xp-bar-wrap">
+        <div class="xp-bar-fill" id="xp-bar-fill" style="width:0%"></div>
+      </div>
+      <div class="xp-numbers" id="xp-numbers">0 / 100 XP</div>
+    </div>
+  </header>
+
+  <nav class="sidebar">
+    <div class="sidebar-section-label">Navigation</div>
+    <a class="nav-item" href="index.html"><span class="nav-icon">◈</span> Dashboard</a>
+    <a class="nav-item" href="vinted.html"><span class="nav-icon">💰</span> Vinted / Income</a>
+    <a class="nav-item" href="apprentissage.html"><span class="nav-icon">📚</span> Apprentissage</a>
+    <a class="nav-item" href="objectifs.html"><span class="nav-icon">🎯</span> Objectifs</a>
+    <a class="nav-item" href="humeur.html"><span class="nav-icon">🧠</span> Humeur</a>
+    <a class="nav-item" href="routine.html"><span class="nav-icon">⏰</span> Routine</a>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section-label">Stats</div>
+    <a class="nav-item" href="progression.html"><span class="nav-icon">📈</span> Progression</a>
+    <a class="nav-item" href="journal.html"><span class="nav-icon">📋</span> Journal XP</a>
+    <div class="streak-badge">
+      <div class="streak-title">🔥 Streak</div>
+      <div class="streak-count" id="streak-count">0</div>
+      <div class="streak-sub">jours consécutifs</div>
+    </div>
+  </nav>
+
+  <main class="page-enter">
+    <div class="page-title">Objectifs</div>
+    <div class="page-sub">TA VISION — PAS À PAS</div>
+    <div class="section-header">
+      <div class="section-title">Mes objectifs</div>
+      <button class="btn btn-primary" onclick="openModal('modal-obj')">+ Objectif</button>
+    </div>
+    <div id="objectifs-list"></div>
+  </main>
+</div>
+
+<div class="modal-overlay" id="modal-obj">
+  <div class="modal">
+    <div class="modal-title">Nouvel objectif</div>
+    <div class="modal-sub">POSE TON INTENTION</div>
+    <div class="form-group">
+      <label class="form-label">Titre</label>
+      <input class="form-input" id="obj-title" placeholder="ex: Gagner 500€ sur Vinted en juin">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <textarea class="form-textarea" id="obj-desc" placeholder="Pourquoi cet objectif compte pour toi…"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Date limite</label>
+      <input class="form-input" id="obj-deadline" type="date">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Catégorie</label>
+      <select class="form-select" id="obj-cat">
+        <option value="vinted">💰 Vinted / Income</option>
+        <option value="apprentissage">📚 Apprentissage</option>
+        <option value="objectifs">🎯 Perso</option>
+        <option value="autre">◈ Autre</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-obj')">Annuler</button>
+      <button class="btn btn-primary" onclick="addObjectif()">Ajouter (+10 XP)</button>
+    </div>
+  </div>
+</div>
+
+<div class="xp-toast" id="xp-toast"></div>
+<script src="js/notion.js"></script>
+<script src="js/xp.js"></script>
+<script src="js/shared.js"></script>
+<script src="js/pages/objectifs.js"></script>
+</body>
+</html>
